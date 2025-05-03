@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Organization = require('../models/Organization');
 const jwt = require('jsonwebtoken');
 
 // @desc    Register user
@@ -6,15 +7,32 @@ const jwt = require('jsonwebtoken');
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, phone, hasDisability, disabilityType, accessibilityNeeds, organization } = req.body;
+    const { firstName, lastName, email, password, phone, hasDisability, disabilityType, accessibilityNeeds, organization } = req.body;
 
-    // Create user
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password || !organization) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields: firstName, lastName, email, password, and organization'
+      });
+    }
+
+    // Verify organization exists
+    const org = await Organization.findById(organization);
+    if (!org) {
+      return res.status(400).json({
+        success: false,
+        message: `Organization not found with id of ${organization}`
+      });
+    }
+
+    // Create user with trainee role
     const user = await User.create({
       firstName,
       lastName,
       email,
       password,
-      role,
+      role: 'trainee', // Force role to be trainee
       phone,
       hasDisability,
       disabilityType,
@@ -24,6 +42,14 @@ exports.register = async (req, res) => {
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
+    // Handle duplicate email error
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already exists'
+      });
+    }
+    
     res.status(400).json({
       success: false,
       message: err.message

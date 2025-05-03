@@ -20,6 +20,7 @@ const resourcePaths = require('./paths/resourcePaths');
 const attendancePaths = require('./paths/attendancePaths');
 const schedulePaths = require('./paths/schedulePaths');
 const trainingRequestPaths = require('./paths/trainingRequestPaths');
+const analyticsPaths = require('./paths/analyticsPaths');
 
 const router = express.Router();
 
@@ -75,7 +76,8 @@ const swaggerDocument = {
     ...resourcePaths,
     ...attendancePaths,
     ...schedulePaths,
-    ...trainingRequestPaths
+    ...trainingRequestPaths,
+    ...analyticsPaths
   }
 };
 
