@@ -11,6 +11,10 @@ const CourseSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a description']
   },
+  thumbnail: {
+    public_id: String,
+    url: String
+  },
   duration: {
     type: Number,
     required: [true, 'Please add course duration in hours']

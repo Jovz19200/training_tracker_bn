@@ -1,0 +1,10 @@
+{
+  "execMap": {
+    "js": "node --experimental-modules"
+  },
+  "ext": "js,json,env",
+  "ignore": [
+    "node_modules/",
+    "uploads/"
+  ]
+} 

@@ -49,10 +49,28 @@ exports.getUser = async (req, res) => {
 
 // @desc    Create user
 // @route   POST /api/users
-// @access  Private/Admin
+// @access  Public
 exports.createUser = async (req, res) => {
   try {
-    const user = await User.create(req.body);
+    // Verify organization exists
+    console.log("req.body", req.body);
+    const organization = await Organization.findById(req.body.organization);
+    console.log("organization", organization.name);
+    console.log("organization", organization);
+    if (!organization) {
+      return res.status(400).json({
+        success: false,
+        message: `Organization not found with id of ${req.body.organization}`
+      });
+    }
+
+    // Force role to be trainee for new users
+    const userData = {
+      ...req.body,
+      role: 'trainee' // Override any role provided in the request
+    };
+
+    const user = await User.create(userData);
 
     res.status(201).json({
       success: true,
@@ -75,7 +93,7 @@ exports.updateUser = async (req, res) => {
     if (req.body.organization) {
       const organization = await Organization.findById(req.body.organization);
       if (!organization) {
-        return res.status(404).json({
+        return res.status(400).json({
           success: false,
           message: `Organization not found with id of ${req.body.organization}`
         });
