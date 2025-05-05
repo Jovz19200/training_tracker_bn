@@ -108,10 +108,33 @@ const updateCourse = async (req, res) => {
       }
     }
 
-    course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
+    // Create update object with only the fields that are provided
+    const updateFields = {};
+    const allowedFields = [
+      'title', 'description', 'duration', 'capacity', 
+      'startDate', 'endDate', 'location', 'isVirtual', 
+      'virtualMeetingLink', 'materials', 'prerequisites', 
+      'status', 'accessibilityFeatures', 'tags', 'thumbnail'
+    ];
+
+    // Only include fields that are provided in the request
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateFields[field] = req.body[field];
+      }
     });
+
+    // Update only if there are fields to update
+    if (Object.keys(updateFields).length > 0) {
+      course = await Course.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateFields },
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+    }
 
     res.status(200).json({
       success: true,
@@ -152,7 +175,7 @@ const deleteCourse = async (req, res) => {
       await cloudinary.uploader.destroy(course.thumbnail.public_id);
     }
 
-    await course.remove();
+    await course.deleteOne();
 
     res.status(200).json({
       success: true,
