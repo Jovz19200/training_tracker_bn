@@ -70,7 +70,7 @@ module.exports = {
           'multipart/form-data': {
             schema: {
               type: 'object',
-              required: ['title', 'description', 'duration', 'capacity', 'startDate', 'endDate', 'location'],
+              required: ['title', 'thumbnail', 'organization','description', 'duration', 'capacity', 'startDate', 'endDate', 'location'],
               properties: {
                 title: {
                   type: 'string',
@@ -88,6 +88,10 @@ module.exports = {
                 duration: {
                   type: 'number',
                   description: 'Course duration in hours'
+                },
+                organization: {
+                  type: 'string',
+                  description: 'Organization name'
                 },
                 capacity: {
                   type: 'number',
