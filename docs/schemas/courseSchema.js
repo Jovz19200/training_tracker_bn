@@ -10,6 +10,20 @@ module.exports = {
       type: 'string',
       description: 'Course description'
     },
+    thumbnail: {
+      type: 'object',
+      properties: {
+        public_id: {
+          type: 'string',
+          description: 'Cloudinary public ID of the thumbnail'
+        },
+        url: {
+          type: 'string',
+          format: 'uri',
+          description: 'URL of the thumbnail image'
+        }
+      }
+    },
     duration: {
       type: 'number',
       description: 'Course duration in hours'

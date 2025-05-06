@@ -20,6 +20,7 @@ const resourcePaths = require('./paths/resourcePaths');
 const attendancePaths = require('./paths/attendancePaths');
 const schedulePaths = require('./paths/schedulePaths');
 const trainingRequestPaths = require('./paths/trainingRequestPaths');
+const analyticsPaths = require('./paths/analyticsPaths');
 
 const router = express.Router();
 
@@ -38,6 +39,10 @@ const swaggerDocument = {
     {
       url: 'http://localhost:5000',
       description: 'Development server'
+    },
+    {
+      url: 'https://otms-bn.onrender.com/',
+      description: 'Production server'
     }
   ],
   components: {
@@ -75,7 +80,8 @@ const swaggerDocument = {
     ...resourcePaths,
     ...attendancePaths,
     ...schedulePaths,
-    ...trainingRequestPaths
+    ...trainingRequestPaths,
+    ...analyticsPaths
   }
 };
 

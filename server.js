@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -18,6 +17,8 @@ const certificateRoutes = require('./routes/certificates');
 const feedbackRoutes = require('./routes/feedback');
 const organizationRoutes = require('./routes/organizations');
 const swaggerRouter = require('./docs/swagger');
+
+require('dotenv').config();
 
 const app = express();
 
