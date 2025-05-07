@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const passport = require('passport');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -20,23 +21,36 @@ const swaggerRouter = require('./docs/swagger');
 
 require('dotenv').config();
 
+// Load passport config
+require('./config/passport');
+
 const app = express();
 
 // Connect to database
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Documentation
 app.use('/api-docs', swaggerRouter);
 
+// Initialize passport
+app.use(passport.initialize());
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/courses', feedbackRoutes);
+app.use('/api/feedback', feedbackRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/schedules', scheduleRoutes);
@@ -44,7 +58,6 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/certificates', certificateRoutes);
-app.use('/api/feedback', feedbackRoutes);
 app.use('/api/organizations', organizationRoutes);
 
 // Error handling middleware

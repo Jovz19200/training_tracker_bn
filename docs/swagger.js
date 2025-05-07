@@ -9,7 +9,7 @@ const feedbackSchema = require('./schemas/feedbackSchema');
 const resourceSchema = require('./schemas/resourceSchema');
 const attendanceSchema = require('./schemas/attendanceSchema');
 const scheduleSchema = require('./schemas/scheduleSchema');
-const trainingRequestSchema = require('./schemas/trainingRequestSchema');
+const requestSchema = require('./schemas/requestSchema');
 
 const authPaths = require('./paths/authPaths');
 const userPaths = require('./paths/userPaths');
@@ -19,7 +19,7 @@ const feedbackPaths = require('./paths/feedbackPaths');
 const resourcePaths = require('./paths/resourcePaths');
 const attendancePaths = require('./paths/attendancePaths');
 const schedulePaths = require('./paths/schedulePaths');
-const trainingRequestPaths = require('./paths/trainingRequestPaths');
+const requestPaths = require('./paths/requestPaths');
 const analyticsPaths = require('./paths/analyticsPaths');
 
 const router = express.Router();
@@ -56,7 +56,7 @@ const swaggerDocument = {
       Resource: resourceSchema,
       Attendance: attendanceSchema,
       Schedule: scheduleSchema,
-      TrainingRequest: trainingRequestSchema
+      TrainingRequest: requestSchema.TrainingRequest
     },
     securitySchemes: {
       bearerAuth: {
@@ -80,8 +80,7 @@ const swaggerDocument = {
     ...resourcePaths,
     ...attendancePaths,
     ...schedulePaths,
-    ...trainingRequestPaths,
-    ...analyticsPaths
+    ...requestPaths
   }
 };
 

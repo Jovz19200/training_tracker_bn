@@ -1,60 +1,29 @@
 const express = require('express');
-const { protect, authorize } = require('../middleware/auth');
+const {
+  getCourseFeedback,
+  getFeedback,
+  createFeedback,
+  updateFeedback,
+  deleteFeedback
+} = require('../controllers/feedbackController');
+
+const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Protect all routes in this router
+// Protect all routes
 router.use(protect);
 
 // Routes for feedback
 router.route('/')
-  .get(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Get all feedback endpoint'
-    });
-  })
-  .post((req, res) => {
-    res.status(201).json({
-      success: true,
-      message: 'Submit feedback endpoint'
-    });
-  });
+  .get(getCourseFeedback);
 
 router.route('/:id')
-  .get(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Get feedback ${req.params.id} endpoint`
-    });
-  })
-  .put(authorize('admin'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Update feedback ${req.params.id} endpoint`
-    });
-  })
-  .delete(authorize('admin'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Delete feedback ${req.params.id} endpoint`
-    });
-  });
+  .get(getFeedback)
+  .put(updateFeedback)
+  .delete(deleteFeedback);
 
-// Route for getting feedback by course
-router.get('/course/:courseId', authorize('admin', 'trainer', 'manager'), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: `Get feedback for course ${req.params.courseId} endpoint`
-  });
-});
-
-// Route for generating feedback report
-router.get('/report/:courseId', authorize('admin', 'trainer', 'manager'), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: `Generate feedback report for course ${req.params.courseId} endpoint`
-  });
-});
+// Route for creating feedback for a course
+router.post('/:courseId/feedback', createFeedback);
 
 module.exports = router;
