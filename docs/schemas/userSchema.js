@@ -20,6 +20,10 @@ module.exports = {
       format: 'email',
       description: 'User\'s email address'
     },
+    googleId: {
+      type: 'string',
+      description: 'Google OAuth ID (if user signed up with Google)'
+    },
     role: {
       type: 'string',
       enum: ['trainee', 'trainer', 'manager', 'admin'],

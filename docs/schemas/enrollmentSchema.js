@@ -13,30 +13,60 @@ module.exports = {
       type: 'string',
       description: 'Reference to the course'
     },
-    status: {
-      type: 'string',
-      enum: ['pending', 'approved', 'rejected', 'completed'],
-      default: 'pending',
-      description: 'Status of the enrollment'
-    },
     enrollmentDate: {
       type: 'string',
       format: 'date-time',
-      description: 'Date when the user enrolled'
+      description: 'Date when the user enrolled in the course'
+    },
+    status: {
+      type: 'string',
+      enum: ['active', 'completed', 'dropped'],
+      default: 'active',
+      description: 'Current status of the enrollment'
     },
     completionDate: {
       type: 'string',
       format: 'date-time',
-      description: 'Date when the course was completed'
+      description: 'Date when the course was completed (if applicable)'
     },
-    grade: {
-      type: 'number',
-      description: 'Grade received for the course'
-    },
-    feedback: {
+    lastAccessDate: {
       type: 'string',
-      description: 'Feedback provided for the course'
+      format: 'date-time',
+      description: 'Last date when the user accessed the course'
+    },
+    progress: {
+      type: 'number',
+      minimum: 0,
+      maximum: 100,
+      default: 0,
+      description: 'Course completion progress percentage'
+    },
+    certificate: {
+      type: 'string',
+      description: 'Reference to the certificate (if course is completed)'
+    },
+    startDate: {
+      type: 'string',
+      format: 'date-time',
+      description: 'Date when the user started the course'
+    },
+    endDate: {
+      type: 'string',
+      format: 'date-time',
+      description: 'Expected completion date of the course'
+    },
+    notes: {
+      type: 'string',
+      description: 'Additional notes about the enrollment'
+    },
+    createdBy: {
+      type: 'string',
+      description: 'Reference to the admin who created the enrollment'
+    },
+    updatedBy: {
+      type: 'string',
+      description: 'Reference to the admin who last updated the enrollment'
     }
   },
-  required: ['user', 'course']
+  required: ['user', 'course', 'enrollmentDate', 'status']
 }; 

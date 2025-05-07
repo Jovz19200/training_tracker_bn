@@ -1,5 +1,5 @@
 const express = require('express');
-const { getCourses, getCourse, createCourse, updateCourse, deleteCourse } = require('../controllers/courseController');
+const { getCourses, getCourse, createCourse, updateCourse, deleteCourse, getCoursesByOrganization } = require('../controllers/courseController');
 const { protect, authorize } = require('../middleware/auth');
 const { upload } = require('../utils/uploadImage');
 
@@ -8,6 +8,9 @@ const router = express.Router();
 router.route('/')
   .get(getCourses)
   .post(protect, authorize('admin', 'trainer'), upload.single('thumbnail'), createCourse);
+
+router.route('/organization/:organizationId')
+  .get(getCoursesByOrganization);
 
 router.route('/:id')
   .get(getCourse)

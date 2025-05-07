@@ -24,6 +24,11 @@ const UserSchema = new mongoose.Schema({
       'Please add a valid email'
     ]
   },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   role: {
     type: String,
     enum: ['trainee', 'trainer', 'manager', 'admin'],
