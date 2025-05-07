@@ -13,31 +13,66 @@ module.exports = {
       type: 'string',
       description: 'Reference to the course'
     },
-    rating: {
-      type: 'integer',
-      minimum: 1,
-      maximum: 5,
-      description: 'Rating given to the course (1-5)'
-    },
-    comment: {
+    enrollment: {
       type: 'string',
-      description: 'Feedback comment'
+      description: 'Reference to the enrollment'
     },
-    feedbackDate: {
+    submissionDate: {
       type: 'string',
       format: 'date-time',
-      description: 'Date when the feedback was provided'
+      description: 'Date when the feedback was submitted'
     },
-    status: {
-      type: 'string',
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
-      description: 'Status of the feedback'
+    overallRating: {
+      type: 'number',
+      minimum: 1,
+      maximum: 5,
+      description: 'Overall rating of the course (1-5)'
     },
-    response: {
+    contentRating: {
+      type: 'number',
+      minimum: 1,
+      maximum: 5,
+      description: 'Rating for course content (1-5)'
+    },
+    instructorRating: {
+      type: 'number',
+      minimum: 1,
+      maximum: 5,
+      description: 'Rating for instructor (1-5)'
+    },
+    facilitiesRating: {
+      type: 'number',
+      minimum: 1,
+      maximum: 5,
+      description: 'Rating for facilities (1-5)'
+    },
+    accessibilityRating: {
+      type: 'number',
+      minimum: 1,
+      maximum: 5,
+      description: 'Rating for accessibility (1-5)'
+    },
+    commentContent: {
       type: 'string',
-      description: 'Response to the feedback from admin/instructor'
+      description: 'Comments about course content'
+    },
+    commentInstructor: {
+      type: 'string',
+      description: 'Comments about the instructor'
+    },
+    commentGeneral: {
+      type: 'string',
+      description: 'General comments about the course'
+    },
+    suggestions: {
+      type: 'string',
+      description: 'Suggestions for improvement'
+    },
+    isAnonymous: {
+      type: 'boolean',
+      default: false,
+      description: 'Whether the feedback is anonymous'
     }
   },
-  required: ['user', 'course', 'rating']
+  required: ['user', 'course', 'enrollment', 'overallRating']
 }; 

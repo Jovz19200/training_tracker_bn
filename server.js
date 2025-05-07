@@ -37,6 +37,8 @@ app.use('/api-docs', swaggerRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/courses', feedbackRoutes);
+app.use('/api/feedback', feedbackRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/schedules', scheduleRoutes);
@@ -44,7 +46,6 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/certificates', certificateRoutes);
-app.use('/api/feedback', feedbackRoutes);
 app.use('/api/organizations', organizationRoutes);
 
 // Error handling middleware

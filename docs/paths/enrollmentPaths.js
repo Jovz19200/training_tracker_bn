@@ -1,21 +1,10 @@
 module.exports = {
-  '/api/courses/{courseId}/feedback': {
+  '/api/enrollments': {
     post: {
-      tags: ['Feedback'],
-      summary: 'Create new feedback',
-      description: 'Create feedback for a specific course (requires enrollment)',
+      tags: ['Enrollments'],
+      summary: 'Create new enrollment',
+      description: 'Enroll a user in a course (admin only)',
       security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: 'courseId',
-          in: 'path',
-          required: true,
-          schema: {
-            type: 'string'
-          },
-          description: 'ID of the course to provide feedback for'
-        }
-      ],
       requestBody: {
         required: true,
         content: {
@@ -23,94 +12,55 @@ module.exports = {
             schema: {
               type: 'object',
               properties: {
-                overallRating: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 5,
-                  description: 'Overall rating of the course (1-5)'
-                },
-                contentRating: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 5,
-                  description: 'Rating for course content (1-5)'
-                },
-                instructorRating: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 5,
-                  description: 'Rating for instructor (1-5)'
-                },
-                facilitiesRating: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 5,
-                  description: 'Rating for facilities (1-5)'
-                },
-                accessibilityRating: {
-                  type: 'number',
-                  minimum: 1,
-                  maximum: 5,
-                  description: 'Rating for accessibility (1-5)'
-                },
-                commentContent: {
+                user: {
                   type: 'string',
-                  description: 'Comments about course content'
+                  description: 'ID of the user to enroll'
                 },
-                commentInstructor: {
+                course: {
                   type: 'string',
-                  description: 'Comments about the instructor'
+                  description: 'ID of the course to enroll in'
                 },
-                commentGeneral: {
+                status: {
                   type: 'string',
-                  description: 'General comments about the course'
-                },
-                suggestions: {
-                  type: 'string',
-                  description: 'Suggestions for improvement'
-                },
-                isAnonymous: {
-                  type: 'boolean',
-                  default: false,
-                  description: 'Whether the feedback is anonymous'
+                  enum: ['active', 'completed', 'dropped'],
+                  default: 'active',
+                  description: 'Initial enrollment status'
                 }
               },
-              required: ['overallRating']
+              required: ['user', 'course']
             }
           }
         }
       },
       responses: {
         201: {
-          description: 'Feedback created successfully',
+          description: 'Enrollment created successfully',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                $ref: '#/components/schemas/Enrollment'
               }
             }
           }
         },
         400: {
-          description: 'Invalid input or already submitted feedback'
+          description: 'Invalid input or course is full'
         },
         401: {
           description: 'Unauthorized'
         },
         403: {
-          description: 'Forbidden - Not enrolled in course'
+          description: 'Forbidden - Admin access required'
         },
         404: {
-          description: 'Course not found'
+          description: 'User or course not found'
         }
       }
-    }
-  },
-  '/api/feedback': {
+    },
     get: {
-      tags: ['Feedback'],
-      summary: 'Get all feedback',
-      description: 'Get all feedback (admin only)',
+      tags: ['Enrollments'],
+      summary: 'Get all enrollments',
+      description: 'Get all enrollments (admin only)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -130,20 +80,29 @@ module.exports = {
             type: 'integer',
             default: 10
           }
+        },
+        {
+          name: 'status',
+          in: 'query',
+          description: 'Filter by enrollment status',
+          schema: {
+            type: 'string',
+            enum: ['active', 'completed', 'dropped']
+          }
         }
       ],
       responses: {
         200: {
-          description: 'List of feedback',
+          description: 'List of enrollments',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  feedback: {
+                  enrollments: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Feedback'
+                      $ref: '#/components/schemas/Enrollment'
                     }
                   },
                   pagination: {
@@ -163,11 +122,11 @@ module.exports = {
       }
     }
   },
-  '/api/feedback/{id}': {
+  '/api/enrollments/{id}': {
     get: {
-      tags: ['Feedback'],
-      summary: 'Get feedback by ID',
-      description: 'Get feedback by ID (admin or feedback owner)',
+      tags: ['Enrollments'],
+      summary: 'Get enrollment by ID',
+      description: 'Get enrollment details by ID (admin or enrollment owner)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -181,11 +140,11 @@ module.exports = {
       ],
       responses: {
         200: {
-          description: 'Feedback details',
+          description: 'Enrollment details',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                $ref: '#/components/schemas/Enrollment'
               }
             }
           }
@@ -194,17 +153,17 @@ module.exports = {
           description: 'Unauthorized'
         },
         403: {
-          description: 'Forbidden - Not authorized to view this feedback'
+          description: 'Forbidden - Not authorized to view this enrollment'
         },
         404: {
-          description: 'Feedback not found'
+          description: 'Enrollment not found'
         }
       }
     },
     put: {
-      tags: ['Feedback'],
-      summary: 'Update feedback',
-      description: 'Update feedback (admin or feedback owner)',
+      tags: ['Enrollments'],
+      summary: 'Update enrollment',
+      description: 'Update enrollment status (admin only)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -221,18 +180,37 @@ module.exports = {
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/Feedback'
+              type: 'object',
+              properties: {
+                status: {
+                  type: 'string',
+                  enum: ['active', 'completed', 'dropped'],
+                  description: 'New enrollment status'
+                },
+                completionDate: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Date when the course was completed (required if status is completed)'
+                },
+                progress: {
+                  type: 'number',
+                  minimum: 0,
+                  maximum: 100,
+                  description: 'Course completion progress percentage'
+                }
+              },
+              required: ['status']
             }
           }
         }
       },
       responses: {
         200: {
-          description: 'Feedback updated successfully',
+          description: 'Enrollment updated successfully',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                $ref: '#/components/schemas/Enrollment'
               }
             }
           }
@@ -244,17 +222,17 @@ module.exports = {
           description: 'Unauthorized'
         },
         403: {
-          description: 'Forbidden - Not authorized to update this feedback'
+          description: 'Forbidden - Admin access required'
         },
         404: {
-          description: 'Feedback not found'
+          description: 'Enrollment not found'
         }
       }
     },
     delete: {
-      tags: ['Feedback'],
-      summary: 'Delete feedback',
-      description: 'Delete feedback (admin or feedback owner)',
+      tags: ['Enrollments'],
+      summary: 'Delete enrollment',
+      description: 'Delete enrollment (admin only)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -268,25 +246,25 @@ module.exports = {
       ],
       responses: {
         200: {
-          description: 'Feedback deleted successfully'
+          description: 'Enrollment deleted successfully'
         },
         401: {
           description: 'Unauthorized'
         },
         403: {
-          description: 'Forbidden - Not authorized to delete this feedback'
+          description: 'Forbidden - Admin access required'
         },
         404: {
-          description: 'Feedback not found'
+          description: 'Enrollment not found'
         }
       }
     }
   },
-  '/api/feedback/course/{courseId}': {
+  '/api/enrollments/course/{courseId}': {
     get: {
-      tags: ['Feedback'],
-      summary: 'Get feedback for a course',
-      description: 'Get all feedback for a specific course',
+      tags: ['Enrollments'],
+      summary: 'Get enrollments for a course',
+      description: 'Get all enrollments for a specific course',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -314,20 +292,29 @@ module.exports = {
             type: 'integer',
             default: 10
           }
+        },
+        {
+          name: 'status',
+          in: 'query',
+          description: 'Filter by enrollment status',
+          schema: {
+            type: 'string',
+            enum: ['active', 'completed', 'dropped']
+          }
         }
       ],
       responses: {
         200: {
-          description: 'List of feedback for the course',
+          description: 'List of enrollments for the course',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  feedback: {
+                  enrollments: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Feedback'
+                      $ref: '#/components/schemas/Enrollment'
                     }
                   },
                   pagination: {
@@ -347,11 +334,11 @@ module.exports = {
       }
     }
   },
-  '/api/feedback/user/{userId}': {
+  '/api/enrollments/user/{userId}': {
     get: {
-      tags: ['Feedback'],
-      summary: 'Get feedback by user',
-      description: 'Get all feedback provided by a specific user',
+      tags: ['Enrollments'],
+      summary: 'Get enrollments by user',
+      description: 'Get all enrollments for a specific user',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -379,20 +366,29 @@ module.exports = {
             type: 'integer',
             default: 10
           }
+        },
+        {
+          name: 'status',
+          in: 'query',
+          description: 'Filter by enrollment status',
+          schema: {
+            type: 'string',
+            enum: ['active', 'completed', 'dropped']
+          }
         }
       ],
       responses: {
         200: {
-          description: 'List of feedback by the user',
+          description: 'List of enrollments for the user',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  feedback: {
+                  enrollments: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/Feedback'
+                      $ref: '#/components/schemas/Enrollment'
                     }
                   },
                   pagination: {
@@ -407,7 +403,7 @@ module.exports = {
           description: 'Unauthorized'
         },
         403: {
-          description: 'Forbidden - Not authorized to view this user\'s feedback'
+          description: 'Forbidden - Not authorized to view this user\'s enrollments'
         },
         404: {
           description: 'User not found'

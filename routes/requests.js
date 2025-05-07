@@ -1,5 +1,14 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
+const {
+  getTrainingRequests,
+  getTrainingRequest,
+  createTrainingRequest,
+  updateTrainingRequest,
+  deleteTrainingRequest,
+  approveTrainingRequest,
+  rejectTrainingRequest
+} = require('../controllers/trainingRequestController');
 
 const router = express.Router();
 
@@ -8,53 +17,18 @@ router.use(protect);
 
 // Routes for training requests
 router.route('/')
-  .get(authorize('admin', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Get all training requests endpoint'
-    });
-  })
-  .post(authorize('trainee', 'trainer'), (req, res) => {
-    res.status(201).json({
-      success: true,
-      message: 'Create training request endpoint'
-    });
-  });
+  .get(authorize('admin'), getTrainingRequests)
+  .post(authorize('trainee', 'trainer'), createTrainingRequest);
 
 router.route('/:id')
-  .get((req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Get training request ${req.params.id} endpoint`
-    });
-  })
-  .put(authorize('admin', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Update training request ${req.params.id} endpoint`
-    });
-  })
-  .delete(authorize('admin', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Delete training request ${req.params.id} endpoint`
-    });
-  });
+  .get(getTrainingRequest) // Accessible by admin or request owner
+  .put(authorize('admin'), updateTrainingRequest)
+  .delete(authorize('admin'), deleteTrainingRequest);
 
-// Route for approving a training request
-router.put('/:id/approve', authorize('admin', 'manager'), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: `Approve training request ${req.params.id} endpoint`
-  });
-});
+// Route for approving a training request (admin only)
+router.put('/:id/approve', authorize('admin'), approveTrainingRequest);
 
-// Route for rejecting a training request
-router.put('/:id/reject', authorize('admin', 'manager'), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: `Reject training request ${req.params.id} endpoint`
-  });
-});
+// Route for rejecting a training request (admin only)
+router.put('/:id/reject', authorize('admin'), rejectTrainingRequest);
 
 module.exports = router;
