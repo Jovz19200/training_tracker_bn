@@ -189,10 +189,32 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+// @desc    Get courses by organization
+// @route   GET /api/courses/organization/:organizationId
+// @access  Public
+const getCoursesByOrganization = async (req, res) => {
+  try {
+    const courses = await Course.find({ organization: req.params.organizationId })
+      .populate('instructor', 'firstName lastName');
+    
+    res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
+
 module.exports = {
   getCourses,
   getCourse,
   createCourse,
   updateCourse,
-  deleteCourse
+  deleteCourse,
+  getCoursesByOrganization
 };

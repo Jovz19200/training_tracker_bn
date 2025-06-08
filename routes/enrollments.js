@@ -1,45 +1,31 @@
 const express = require('express');
+const {
+  getEnrollments,
+  getEnrollment,
+  createEnrollment,
+  updateEnrollment,
+  deleteEnrollment
+} = require('../controllers/enrollmentController');
+
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Protect all routes in this router
+// Protect all routes
 router.use(protect);
 
 // Routes for enrollments
 router.route('/')
-  .get(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Get all enrollments endpoint'
-    });
-  })
-  .post(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(201).json({
-      success: true,
-      message: 'Create enrollment endpoint'
-    });
-  });
+  .get(getEnrollments)
+  .post(authorize('admin'), createEnrollment);
 
 router.route('/:id')
-  .get((req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Get enrollment ${req.params.id} endpoint`
-    });
-  })
-  .put(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Update enrollment ${req.params.id} endpoint`
-    });
-  })
-  .delete(authorize('admin', 'trainer', 'manager'), (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: `Delete enrollment ${req.params.id} endpoint`
-    });
-  });
+  .get(getEnrollment)
+  .put(authorize('admin'), updateEnrollment)
+  .delete(authorize('admin'), deleteEnrollment);
+
+// Route for enrolling in a course
+router.post('/courses/:courseId/enroll', createEnrollment);
 
 // Route for marking enrollment as completed
 router.put('/:id/complete', authorize('admin', 'trainer'), (req, res) => {
