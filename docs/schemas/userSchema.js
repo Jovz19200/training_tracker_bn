@@ -20,9 +20,10 @@ module.exports = {
       format: 'email',
       description: 'User\'s email address'
     },
-    googleId: {
-      type: 'string',
-      description: 'Google OAuth ID (if user signed up with Google)'
+    twoFAStatus: {
+      type: 'boolean',
+      default: false,
+      description: 'Whether two-factor authentication (2FA) is enabled for the user'
     },
     role: {
       type: 'string',
@@ -77,6 +78,7 @@ module.exports = {
     role: 'trainee',
     phone: '+1234567890',
     hasDisability: false,
+    twoFAStatus: false,
     disabilityType: 'none'
   }
 };
