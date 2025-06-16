@@ -8,7 +8,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/verify2fa', verifyTwoFA);
 router.post('/forgotpassword', forgotPassword);
-router.put('/resetpassword/:resettoken', resetPassword);
+router.put('/resetpassword', resetPassword);
 router.get('/verifyemail/:verificationtoken', verifyEmail);
 router.get('/me', protect, getMe);
 router.get('/logout', protect, logout);

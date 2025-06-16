@@ -53,10 +53,7 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     // Verify organization exists
-    console.log("req.body", req.body);
     const organization = await Organization.findById(req.body.organization);
-    console.log("organization", organization.name);
-    console.log("organization", organization);
     if (!organization) {
       return res.status(400).json({
         success: false,

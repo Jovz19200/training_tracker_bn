@@ -338,17 +338,9 @@ module.exports = {
   '/api/auth/resetpassword/{resettoken}': {
     put: {
       tags: ['Auth'],
-      summary: 'Reset password',
-      description: 'Resets the user\'s password using a valid reset token.',
-      parameters: [
-        {
-          name: 'resettoken',
-          in: 'path',
-          required: true,
-          description: 'The password reset token received via email',
-          schema: { type: 'string' }
-        }
-      ],
+      summary: 'Reset user password',
+      description: 'Allows a user to reset their password using a valid reset token received via email. The token is now expected as a query parameter in the frontend URL.',
+      parameters: [],
       requestBody: {
         required: true,
         content: {
@@ -357,7 +349,7 @@ module.exports = {
               type: 'object',
               required: ['password'],
               properties: {
-                password: { type: 'string', minLength: 6, example: 'newsecurepassword123' }
+                password: { type: 'string', format: 'password', example: 'newSecurePassword123' }
               }
             }
           }

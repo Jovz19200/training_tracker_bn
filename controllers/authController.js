@@ -46,8 +46,11 @@ exports.register = async (req, res) => {
     const verificationToken = user.getEmailVerificationToken();
     await user.save({ validateBeforeSave: false });
 
-    // Create verification URL
-    const verificationURL = `${req.protocol}://${req.get('host')}/api/auth/verifyemail/${verificationToken}`;
+    // Create verification URL pointing to frontend, dynamically set based on environment
+    const frontendBaseUrl = process.env.NODE_ENV === 'production'
+      ? process.env.HOSTED_OTMS_FN_URL
+      : process.env.FRONTEND_URL;
+    const verificationURL = `${frontendBaseUrl}/verify-email?token=${verificationToken}`;
 
     const message = getEmailVerificationTemplate(user.firstName, verificationURL);
 
@@ -304,8 +307,11 @@ exports.forgotPassword = async (req, res) => {
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-    // Create reset URL
-    const resetURL = `${req.protocol}://${req.get('host')}/api/auth/resetpassword/${resetToken}`;
+    // Create reset URL pointing to frontend, dynamically set based on environment
+    const frontendBaseUrl = process.env.NODE_ENV === 'production'
+      ? process.env.HOSTED_OTMS_FN_URL
+      : process.env.FRONTEND_URL;
+    const resetURL = `${frontendBaseUrl}/reset-password?token=${resetToken}`;
 
     const message = getResetPasswordTemplate(user.firstName, resetURL);
 
@@ -339,18 +345,28 @@ exports.forgotPassword = async (req, res) => {
 };
 
 // @desc    Reset password
-// @route   PUT /api/auth/resetpassword/:resettoken
+// @route   PUT /api/auth/resetpassword
 // @access  Public
 exports.resetPassword = async (req, res) => {
   try {
-    // Get hashed token
-    const resetPasswordToken = crypto
+    const { password, resetToken } = req.body;
+   
+
+    if (!resetToken || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a reset token and a new password'
+      });
+    }
+
+    // Hash token to compare with hashed token in DB
+    const hashedToken = crypto
       .createHash('sha256')
-      .update(req.params.resettoken)
+      .update(resetToken)
       .digest('hex');
 
     const user = await User.findOne({
-      resetPasswordToken,
+      resetPasswordToken: hashedToken,
       resetPasswordExpire: { $gt: Date.now() }
     });
 
@@ -362,7 +378,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     // Set new password
-    user.password = req.body.password;
+    user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save();
