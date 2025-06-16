@@ -151,6 +151,59 @@ module.exports = {
       }
     }
   },
+  '/api/courses/organization/{organizationId}': {
+    get: {
+      tags: ['Courses'],
+      summary: 'Get courses by organization',
+      parameters: [
+        {
+          name: 'organizationId',
+          in: 'path',
+          required: true,
+          schema: {
+            type: 'string'
+          },
+          description: 'Organization ID'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'List of courses for the organization retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  count: { type: 'number' },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Course'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Bad request',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   '/api/courses/{id}': {
     get: {
       tags: ['Courses'],

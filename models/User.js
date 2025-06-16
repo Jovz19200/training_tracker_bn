@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const UserSchema = new mongoose.Schema({
   firstName: {
@@ -24,6 +25,12 @@ const UserSchema = new mongoose.Schema({
       'Please add a valid email'
     ]
   },
+  twoFAStatus: {
+    type: Boolean,
+    default: true
+  },
+  twoFAToken: String,
+  twoFATokenExpire: Date,
   role: {
     type: String,
     enum: ['trainee', 'trainer', 'manager', 'admin'],
@@ -45,6 +52,12 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Organization'
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: String,
+  emailVerificationExpire: Date,
   hasDisability: {
     type: Boolean,
     default: false
@@ -83,6 +96,54 @@ UserSchema.methods.getSignedJwtToken = function() {
 // Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate and hash 2FA token
+UserSchema.methods.getTwoFAToken = function() {
+  // Generate token
+  const twoFAToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit number
+
+  // Set to twoFAToken field
+  this.twoFAToken = twoFAToken;
+
+  // Set expire
+  this.twoFATokenExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return twoFAToken;
+};
+
+// Generate and hash password reset token
+UserSchema.methods.getResetPasswordToken = function() {
+  // Generate token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return resetToken;
+};
+
+// Generate email verification token
+UserSchema.methods.getEmailVerificationToken = function() {
+  // Generate token
+  const verificationToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to emailVerificationToken field
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  // Set expire
+  this.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+  return verificationToken;
 };
 
 module.exports = mongoose.model('User', UserSchema);

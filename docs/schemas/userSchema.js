@@ -20,6 +20,11 @@ module.exports = {
       format: 'email',
       description: 'User\'s email address'
     },
+    twoFAStatus: {
+      type: 'boolean',
+      default: false,
+      description: 'Whether two-factor authentication (2FA) is enabled for the user'
+    },
     role: {
       type: 'string',
       enum: ['trainee', 'trainer', 'manager', 'admin'],
@@ -73,6 +78,7 @@ module.exports = {
     role: 'trainee',
     phone: '+1234567890',
     hasDisability: false,
+    twoFAStatus: false,
     disabilityType: 'none'
   }
 };

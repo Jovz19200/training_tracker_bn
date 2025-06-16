@@ -1,13 +1,29 @@
 const nodemailer = require('nodemailer');
-
+const { getOtpTemplate } = require('../templates/emails/otp');
+const { getResetPasswordTemplate } = require('../templates/emails/resetPassword');
+const { getEmailVerificationTemplate } = require('../templates/emails/emailVerification');
+require('dotenv').config();
 // Create a transporter
 const transporter = nodemailer.createTransport({
+  service: 'gmail',
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
   secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+// Verify connection configuration
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP connection failed:', error);
+  } else {
+    // console.log('SMTP server is ready to take messages'); // Removed or commented out
   }
 });
 
@@ -25,14 +41,6 @@ exports.sendEmail = async (options) => {
   const info = await transporter.sendMail(mailOptions);
 
   return info;
-};
-
-// Send SMS notification (placeholder for future implementation)
-exports.sendSMS = async (options) => {
-  // This is a placeholder for SMS functionality
-  // In a real implementation, you would integrate with an SMS service provider
-  console.log(`SMS notification sent to ${options.phone}: ${options.message}`);
-  return true;
 };
 
 // Send in-app notification
@@ -84,3 +92,7 @@ exports.getSessionReminderTemplate = (user, course, session) => {
     </div>
   `;
 };
+
+exports.getOtpTemplate = getOtpTemplate;
+exports.getResetPasswordTemplate = getResetPasswordTemplate;
+exports.getEmailVerificationTemplate = getEmailVerificationTemplate;
