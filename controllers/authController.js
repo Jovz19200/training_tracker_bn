@@ -46,8 +46,11 @@ exports.register = async (req, res) => {
     const verificationToken = user.getEmailVerificationToken();
     await user.save({ validateBeforeSave: false });
 
-    // Create verification URL
-    const verificationURL = `${req.protocol}://${req.get('host')}/api/auth/verifyemail/${verificationToken}`;
+    // Create verification URL pointing to frontend, dynamically set based on environment
+    const frontendBaseUrl = process.env.NODE_ENV === 'production'
+      ? process.env.HOSTED_OTMS_FN_URL
+      : process.env.FRONTEND_URL;
+    const verificationURL = `${frontendBaseUrl}/verify-email?token=${verificationToken}`;
 
     const message = getEmailVerificationTemplate(user.firstName, verificationURL);
 
