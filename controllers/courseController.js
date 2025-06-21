@@ -61,7 +61,16 @@ const createCourse = async (req, res) => {
       }
     }
 
-    const course = await Course.create(req.body);
+    // Parse the training data if it's a string
+    const courseData = typeof req.body.training === 'string' 
+      ? JSON.parse(req.body.training)
+      : req.body.training || req.body;
+
+    // Add instructor and thumbnail if they exist in the root
+    if (req.body.instructor) courseData.instructor = req.body.instructor;
+    if (req.body.thumbnail) courseData.thumbnail = req.body.thumbnail;
+
+    const course = await Course.create(courseData);
     res.status(201).json({
       success: true,
       data: course

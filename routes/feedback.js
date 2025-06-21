@@ -4,7 +4,9 @@ const {
   getFeedback,
   createFeedback,
   updateFeedback,
-  deleteFeedback
+  deleteFeedback,
+  getFeedbackByUser,
+  getFeedbackByCourse
 } = require('../controllers/feedbackController');
 
 const { protect } = require('../middleware/auth');
@@ -13,6 +15,12 @@ const router = express.Router();
 
 // Protect all routes
 router.use(protect);
+
+// Route for getting feedback by user
+router.get('/user/:userId', getFeedbackByUser);
+
+// Route for getting feedback by course
+router.get('/course/:courseId', getFeedbackByCourse);
 
 // Routes for feedback
 router.route('/')

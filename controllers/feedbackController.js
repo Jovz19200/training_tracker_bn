@@ -231,4 +231,157 @@ exports.deleteFeedback = async (req, res) => {
       message: err.message
     });
   }
+};
+
+// @desc    Get feedback by user
+// @route   GET /api/feedback/user/:userId
+// @access  Private
+exports.getFeedbackByUser = async (req, res) => {
+  try {
+    // Check if user exists
+    const User = require('../models/User');
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Only allow access to own feedback, admin, or course instructor
+    if (req.params.userId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this user\'s feedback'
+      });
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Feedback.countDocuments({ user: req.params.userId });
+
+    const feedback = await Feedback.find({ user: req.params.userId })
+      .populate({
+        path: 'course',
+        select: 'title startDate endDate'
+      })
+      .populate({
+        path: 'user',
+        select: 'firstName lastName',
+        transform: doc => doc.isAnonymous ? { firstName: 'Anonymous', lastName: 'User' } : doc
+      })
+      .skip(startIndex)
+      .limit(limit)
+      .sort({ submissionDate: -1 });
+
+    // Pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      count: feedback.length,
+      pagination,
+      data: feedback
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
+
+// @desc    Get feedback for a specific course
+// @route   GET /api/feedback/course/:courseId
+// @access  Private
+exports.getFeedbackByCourse = async (req, res) => {
+  try {
+    // Check if course exists
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    // Only allow access to course instructor, admin, or enrolled users
+    if (req.user.role !== 'admin' && course.instructor.toString() !== req.user.id) {
+      // Check if user is enrolled in the course
+      const enrollment = await Enrollment.findOne({
+        user: req.user.id,
+        course: req.params.courseId
+      });
+
+      if (!enrollment) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to view feedback for this course'
+        });
+      }
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Feedback.countDocuments({ course: req.params.courseId });
+
+    const feedback = await Feedback.find({ course: req.params.courseId })
+      .populate({
+        path: 'user',
+        select: 'firstName lastName',
+        transform: doc => doc.isAnonymous ? { firstName: 'Anonymous', lastName: 'User' } : doc
+      })
+      .skip(startIndex)
+      .limit(limit)
+      .sort({ submissionDate: -1 });
+
+    // Pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      count: feedback.length,
+      pagination,
+      data: feedback
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 }; 
