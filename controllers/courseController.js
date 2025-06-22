@@ -1,13 +1,14 @@
 const Course = require('../models/Course');
-const { uploadImage } = require('../utils/uploadImage');
-const cloudinary = require('../config/cloudinary');
+const { uploadImage, deleteImage } = require('../utils/uploadImage');
+const path = require('path');
+const fs = require('fs');
 
 // @desc    Get all courses
 // @route   GET /api/courses
 // @access  Public
 const getCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate('instructor', 'firstName lastName');
+    const courses = await Course.find().populate('instructor', 'firstName lastName').populate('resources');
     res.status(200).json({
       success: true,
       count: courses.length,
@@ -26,7 +27,7 @@ const getCourses = async (req, res) => {
 // @access  Public
 const getCourse = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate('instructor', 'firstName lastName');
+    const course = await Course.findById(req.params.id).populate('instructor', 'firstName lastName').populate('resources');
     if (!course) {
       return res.status(404).json({
         success: false,
@@ -55,9 +56,14 @@ const createCourse = async (req, res) => {
 
     // Handle thumbnail upload
     if (req.file) {
-      const thumbnail = await uploadImage(req.file);
-      if (thumbnail) {
-        req.body.thumbnail = thumbnail;
+      try {
+        const thumbnail = await uploadImage(req.file);
+        if (thumbnail) {
+          req.body.thumbnail = thumbnail;
+        }
+      } catch (uploadError) {
+        console.error('Thumbnail upload error:', uploadError);
+        // Continue without thumbnail if upload fails
       }
     }
 
@@ -107,13 +113,19 @@ const updateCourse = async (req, res) => {
 
     // Handle thumbnail upload
     if (req.file) {
-      // Delete old thumbnail if exists
-      if (course.thumbnail && course.thumbnail.public_id) {
-        await cloudinary.uploader.destroy(course.thumbnail.public_id);
-      }
-      const thumbnail = await uploadImage(req.file);
-      if (thumbnail) {
-        req.body.thumbnail = thumbnail;
+      try {
+        // Delete old thumbnail if exists
+        if (course.thumbnail && course.thumbnail.public_id) {
+          await deleteImage(course.thumbnail.public_id);
+        }
+        
+        const thumbnail = await uploadImage(req.file);
+        if (thumbnail) {
+          req.body.thumbnail = thumbnail;
+        }
+      } catch (uploadError) {
+        console.error('Thumbnail upload error:', uploadError);
+        // Continue without updating thumbnail if upload fails
       }
     }
 
@@ -150,6 +162,7 @@ const updateCourse = async (req, res) => {
       data: course
     });
   } catch (err) {
+    console.error('Course update error:', err);
     res.status(400).json({
       success: false,
       message: err.message
@@ -181,7 +194,7 @@ const deleteCourse = async (req, res) => {
 
     // Delete thumbnail if exists
     if (course.thumbnail && course.thumbnail.public_id) {
-      await cloudinary.uploader.destroy(course.thumbnail.public_id);
+      await deleteImage(course.thumbnail.public_id);
     }
 
     await course.deleteOne();
@@ -219,11 +232,81 @@ const getCoursesByOrganization = async (req, res) => {
   }
 };
 
+// Upload a material to a course
+const uploadCourseMaterial = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+    const fileType = path.extname(req.file.originalname).substring(1).toLowerCase();
+    const material = {
+      title: req.body.title || req.file.originalname,
+      fileUrl: `/uploads/${req.file.filename}`,
+      fileType,
+      uploadDate: new Date()
+    };
+    course.materials.push(material);
+    await course.save();
+    res.status(201).json({ success: true, data: material });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// Delete a material from a course
+const deleteCourseMaterial = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    const materialId = req.params.materialId;
+    const material = course.materials.id(materialId) || course.materials.find(m => m._id?.toString() === materialId);
+    if (!material) return res.status(404).json({ success: false, message: 'Material not found' });
+    // Remove from array
+    course.materials = course.materials.filter(m => m._id?.toString() !== materialId);
+    await course.save();
+    res.status(200).json({ success: true, message: 'Material deleted' });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// List all materials for a course
+const listCourseMaterials = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    res.status(200).json({ success: true, data: course.materials });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// Download a material file
+const downloadCourseMaterial = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    const materialId = req.params.materialId;
+    const material = course.materials.id(materialId) || course.materials.find(m => m._id?.toString() === materialId);
+    if (!material) return res.status(404).json({ success: false, message: 'Material not found' });
+    const filePath = path.join(__dirname, '..', material.fileUrl);
+    if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'File not found on server' });
+    res.download(filePath, material.title || path.basename(filePath));
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getCourses,
   getCourse,
   createCourse,
   updateCourse,
   deleteCourse,
-  getCoursesByOrganization
+  getCoursesByOrganization,
+  uploadCourseMaterial,
+  deleteCourseMaterial,
+  listCourseMaterials,
+  downloadCourseMaterial
 };

@@ -1,9 +1,54 @@
 module.exports = {
   '/api/courses/{courseId}/feedback': {
+    get: {
+      tags: ['Feedback'],
+      summary: 'Get all feedback for a course',
+      description: 'Get all feedback for a specific course (public access)',
+      parameters: [
+        {
+          name: 'courseId',
+          in: 'path',
+          required: true,
+          schema: {
+            type: 'string'
+          },
+          description: 'ID of the course'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'List of feedback for the course',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  count: {
+                    type: 'integer'
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Feedback'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        404: {
+          description: 'Course not found'
+        }
+      }
+    },
     post: {
       tags: ['Feedback'],
       summary: 'Create new feedback',
-      description: 'Create feedback for a specific course (requires enrollment)',
+      description: 'Create feedback for a specific course. Requires enrollment with status: completed, enrolled, failed, or dropped (if attended sessions). Admin/trainer can provide feedback without enrollment.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -27,7 +72,8 @@ module.exports = {
                   type: 'number',
                   minimum: 1,
                   maximum: 5,
-                  description: 'Overall rating of the course (1-5)'
+                  description: 'Overall rating of the course (1-5)',
+                  required: true
                 },
                 contentRating: {
                   type: 'number',
@@ -86,19 +132,105 @@ module.exports = {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  data: {
+                    $ref: '#/components/schemas/Feedback'
+                  },
+                  metadata: {
+                    type: 'object',
+                    properties: {
+                      enrollmentStatus: {
+                        type: 'string',
+                        description: 'Status of user enrollment'
+                      },
+                      feedbackReason: {
+                        type: 'string',
+                        description: 'Reason why feedback was allowed'
+                      },
+                      userDisabilityType: {
+                        type: 'string',
+                        description: 'User disability type if applicable'
+                      },
+                      userAccessibilityNeeds: {
+                        type: 'string',
+                        description: 'User accessibility needs if applicable'
+                      },
+                      autoCompleted: {
+                        type: 'boolean',
+                        description: 'Whether enrollment was auto-completed'
+                      }
+                    }
+                  }
+                }
               }
             }
           }
         },
         400: {
-          description: 'Invalid input or already submitted feedback'
+          description: 'Invalid input or already submitted feedback',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: false
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'You have already submitted feedback for this course'
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
         },
         403: {
-          description: 'Forbidden - Not enrolled in course'
+          description: 'Forbidden - Cannot provide feedback',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean',
+                    example: false
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Cannot provide feedback: No enrollment record found'
+                  },
+                  details: {
+                    type: 'object',
+                    properties: {
+                      enrollmentStatus: {
+                        type: 'string'
+                      },
+                      courseEndDate: {
+                        type: 'string',
+                        format: 'date-time'
+                      },
+                      currentDate: {
+                        type: 'string',
+                        format: 'date-time'
+                      },
+                      reason: {
+                        type: 'string'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         404: {
           description: 'Course not found'
@@ -140,14 +272,44 @@ module.exports = {
               schema: {
                 type: 'object',
                 properties: {
-                  feedback: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  count: {
+                    type: 'integer'
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      next: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      },
+                      prev: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      }
+                    }
+                  },
+                  data: {
                     type: 'array',
                     items: {
                       $ref: '#/components/schemas/Feedback'
                     }
-                  },
-                  pagination: {
-                    $ref: '#/components/schemas/Pagination'
                   }
                 }
               }
@@ -155,7 +317,7 @@ module.exports = {
           }
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
         },
         403: {
           description: 'Forbidden - Admin access required'
@@ -167,7 +329,7 @@ module.exports = {
     get: {
       tags: ['Feedback'],
       summary: 'Get feedback by ID',
-      description: 'Get feedback by ID (admin or feedback owner)',
+      description: 'Get feedback by ID (admin, feedback owner, or course instructor)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -176,7 +338,8 @@ module.exports = {
           required: true,
           schema: {
             type: 'string'
-          }
+          },
+          description: 'Feedback ID'
         }
       ],
       responses: {
@@ -185,13 +348,21 @@ module.exports = {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  data: {
+                    $ref: '#/components/schemas/Feedback'
+                  }
+                }
               }
             }
           }
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
         },
         403: {
           description: 'Forbidden - Not authorized to view this feedback'
@@ -204,7 +375,7 @@ module.exports = {
     put: {
       tags: ['Feedback'],
       summary: 'Update feedback',
-      description: 'Update feedback (admin or feedback owner)',
+      description: 'Update feedback (feedback owner or admin only)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -213,7 +384,8 @@ module.exports = {
           required: true,
           schema: {
             type: 'string'
-          }
+          },
+          description: 'Feedback ID'
         }
       ],
       requestBody: {
@@ -221,7 +393,59 @@ module.exports = {
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/Feedback'
+              type: 'object',
+              properties: {
+                overallRating: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 5,
+                  description: 'Overall rating of the course (1-5)'
+                },
+                contentRating: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 5,
+                  description: 'Rating for course content (1-5)'
+                },
+                instructorRating: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 5,
+                  description: 'Rating for instructor (1-5)'
+                },
+                facilitiesRating: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 5,
+                  description: 'Rating for facilities (1-5)'
+                },
+                accessibilityRating: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 5,
+                  description: 'Rating for accessibility (1-5)'
+                },
+                commentContent: {
+                  type: 'string',
+                  description: 'Comments about course content'
+                },
+                commentInstructor: {
+                  type: 'string',
+                  description: 'Comments about the instructor'
+                },
+                commentGeneral: {
+                  type: 'string',
+                  description: 'General comments about the course'
+                },
+                suggestions: {
+                  type: 'string',
+                  description: 'Suggestions for improvement'
+                },
+                isAnonymous: {
+                  type: 'boolean',
+                  description: 'Whether the feedback is anonymous'
+                }
+              }
             }
           }
         }
@@ -232,7 +456,15 @@ module.exports = {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/Feedback'
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  data: {
+                    $ref: '#/components/schemas/Feedback'
+                  }
+                }
               }
             }
           }
@@ -241,7 +473,7 @@ module.exports = {
           description: 'Invalid input'
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
         },
         403: {
           description: 'Forbidden - Not authorized to update this feedback'
@@ -254,7 +486,7 @@ module.exports = {
     delete: {
       tags: ['Feedback'],
       summary: 'Delete feedback',
-      description: 'Delete feedback (admin or feedback owner)',
+      description: 'Delete feedback (feedback owner or admin only)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -263,15 +495,31 @@ module.exports = {
           required: true,
           schema: {
             type: 'string'
-          }
+          },
+          description: 'Feedback ID'
         }
       ],
       responses: {
         200: {
-          description: 'Feedback deleted successfully'
+          description: 'Feedback deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  data: {
+                    type: 'object'
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
         },
         403: {
           description: 'Forbidden - Not authorized to delete this feedback'
@@ -282,11 +530,110 @@ module.exports = {
       }
     }
   },
+  '/api/feedback/user/{userId}': {
+    get: {
+      tags: ['Feedback'],
+      summary: 'Get feedback by user',
+      description: 'Get all feedback submitted by a specific user (user can view own feedback, admin can view any)',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'userId',
+          in: 'path',
+          required: true,
+          schema: {
+            type: 'string'
+          },
+          description: 'User ID'
+        },
+        {
+          name: 'page',
+          in: 'query',
+          description: 'Page number',
+          schema: {
+            type: 'integer',
+            default: 1
+          }
+        },
+        {
+          name: 'limit',
+          in: 'query',
+          description: 'Number of items per page',
+          schema: {
+            type: 'integer',
+            default: 10
+          }
+        }
+      ],
+      responses: {
+        200: {
+          description: 'List of feedback by user',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  count: {
+                    type: 'integer'
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      next: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      },
+                      prev: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      }
+                    }
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Feedback'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: {
+          description: 'Unauthorized - Invalid or missing token'
+        },
+        403: {
+          description: 'Forbidden - Not authorized to view this user\'s feedback'
+        },
+        404: {
+          description: 'User not found'
+        }
+      }
+    }
+  },
   '/api/feedback/course/{courseId}': {
     get: {
       tags: ['Feedback'],
       summary: 'Get feedback for a course',
-      description: 'Get all feedback for a specific course',
+      description: 'Get all feedback for a specific course (course instructor, admin, or enrolled users)',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -295,7 +642,8 @@ module.exports = {
           required: true,
           schema: {
             type: 'string'
-          }
+          },
+          description: 'Course ID'
         },
         {
           name: 'page',
@@ -324,14 +672,44 @@ module.exports = {
               schema: {
                 type: 'object',
                 properties: {
-                  feedback: {
+                  success: {
+                    type: 'boolean'
+                  },
+                  count: {
+                    type: 'integer'
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      next: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      },
+                      prev: {
+                        type: 'object',
+                        properties: {
+                          page: {
+                            type: 'integer'
+                          },
+                          limit: {
+                            type: 'integer'
+                          }
+                        }
+                      }
+                    }
+                  },
+                  data: {
                     type: 'array',
                     items: {
                       $ref: '#/components/schemas/Feedback'
                     }
-                  },
-                  pagination: {
-                    $ref: '#/components/schemas/Pagination'
                   }
                 }
               }
@@ -339,78 +717,13 @@ module.exports = {
           }
         },
         401: {
-          description: 'Unauthorized'
+          description: 'Unauthorized - Invalid or missing token'
+        },
+        403: {
+          description: 'Forbidden - Not authorized to view feedback for this course'
         },
         404: {
           description: 'Course not found'
-        }
-      }
-    }
-  },
-  '/api/feedback/user/{userId}': {
-    get: {
-      tags: ['Feedback'],
-      summary: 'Get feedback by user',
-      description: 'Get all feedback provided by a specific user',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: 'userId',
-          in: 'path',
-          required: true,
-          schema: {
-            type: 'string'
-          }
-        },
-        {
-          name: 'page',
-          in: 'query',
-          description: 'Page number',
-          schema: {
-            type: 'integer',
-            default: 1
-          }
-        },
-        {
-          name: 'limit',
-          in: 'query',
-          description: 'Number of items per page',
-          schema: {
-            type: 'integer',
-            default: 10
-          }
-        }
-      ],
-      responses: {
-        200: {
-          description: 'List of feedback by the user',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  feedback: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/Feedback'
-                    }
-                  },
-                  pagination: {
-                    $ref: '#/components/schemas/Pagination'
-                  }
-                }
-              }
-            }
-          }
-        },
-        401: {
-          description: 'Unauthorized'
-        },
-        403: {
-          description: 'Forbidden - Not authorized to view this user\'s feedback'
-        },
-        404: {
-          description: 'User not found'
         }
       }
     }

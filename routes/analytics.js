@@ -1,53 +1,71 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
+const {
+  getDashboardMetrics,
+  getEnrollmentTrends,
+  getFeedbackTrends,
+  getCompletionRates,
+  getUserGrowthTrends,
+  getCoursePerformance,
+  getOrganizationAnalytics,
+  getRealTimeAnalytics,
+  generateCustomReport,
+  exportAnalyticsData,
+  downloadExport,
+  getExportHistory,
+  getDisabilityTypeStats,
+  getAccessibilityNeedsStats,
+  getEnrollmentStatsByDisability,
+  getCertificateAnalytics,
+  getAttendanceAnalytics,
+  previewReport,
+  getReportFiles,
+  downloadReport
+} = require('../controllers/analyticsController');
 
 const router = express.Router();
 
 // Protect all routes in this router
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+router.use(authorize('admin', 'trainer'));
 
-// Routes for analytics
-router.get('/dashboard', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Get dashboard analytics endpoint'
-  });
-});
+// Dashboard analytics
+router.get('/dashboard', getDashboardMetrics);
 
-router.get('/attendance', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Get attendance analytics endpoint'
-  });
-});
+// Trend analysis
+router.get('/enrollment-trends', getEnrollmentTrends);
+router.get('/feedback-trends', getFeedbackTrends);
+router.get('/completion-rates', getCompletionRates);
+router.get('/user-growth', getUserGrowthTrends);
 
-router.get('/completion-rates', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Get completion rates analytics endpoint'
-  });
-});
+// Performance analysis
+router.get('/course-performance', getCoursePerformance);
+router.get('/organization/:organizationId', getOrganizationAnalytics);
 
-router.get('/training-costs', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Get training costs analytics endpoint'
-  });
-});
+// Real-time analytics
+router.get('/realtime', getRealTimeAnalytics);
 
-router.get('/skills-gap', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Get skills gap analytics endpoint'
-  });
-});
+// Certificate analytics
+router.get('/certificates', authorize('admin', 'trainer'), getCertificateAnalytics);
 
-router.get('/reports/generate', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Generate custom report endpoint'
-  });
-});
+// Attendance analytics
+router.get('/attendance', getAttendanceAnalytics);
+
+// Report generation
+router.post('/reports/generate', generateCustomReport);
+
+// Export functionality
+router.post('/export', exportAnalyticsData);
+router.get('/download/:filename', downloadExport);
+router.get('/exports', getExportHistory);
+router.get('/reports/preview/:filename', previewReport);
+
+// Disability analytics
+router.get('/disability-type-stats', authorize('admin', 'trainer'), getDisabilityTypeStats);
+router.get('/accessibility-needs-stats', authorize('admin', 'trainer'), getAccessibilityNeedsStats);
+router.get('/enrollment-stats-by-disability', authorize('admin', 'trainer'), getEnrollmentStatsByDisability);
+
+router.get('/reports/files', getReportFiles);
+router.get('/reports/download/:filename', downloadReport);
 
 module.exports = router;

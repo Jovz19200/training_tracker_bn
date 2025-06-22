@@ -84,21 +84,68 @@ exports.createFeedback = async (req, res) => {
     }
 
     let enrollment = null;
+    let canProvideFeedback = false;
+    let feedbackReason = '';
 
-    // If user is not admin, check enrollment
-    if (req.user.role !== 'admin') {
-      enrollment = await Enrollment.findOne({
-        user: req.user.id,
-        course: req.params.courseId,
-        status: { $in: ['enrolled', 'completed'] }
-      });
+    // Check enrollment status
+    enrollment = await Enrollment.findOne({
+      user: req.user.id,
+      course: req.params.courseId
+    });
 
-      if (!enrollment) {
-        return res.status(403).json({
-          success: false,
-          message: 'You must be enrolled in this course to provide feedback'
-        });
+    if (enrollment) {
+      // User has an enrollment record - allow feedback for most statuses
+      switch (enrollment.status) {
+        case 'completed':
+        case 'enrolled':
+        case 'failed':
+          canProvideFeedback = true;
+          feedbackReason = `Enrolled with status: ${enrollment.status}`;
+          break;
+        
+        case 'dropped':
+          // Allow feedback if they attended some sessions before dropping
+          const Attendance = require('../models/Attendance');
+          const attendanceCount = await Attendance.countDocuments({
+            enrollment: enrollment._id,
+            status: 'present'
+          });
+          
+          if (attendanceCount > 0) {
+            canProvideFeedback = true;
+            feedbackReason = 'Attended sessions before dropping';
+          } else {
+            canProvideFeedback = false;
+            feedbackReason = 'No sessions attended before dropping';
+          }
+          break;
+        
+        default:
+          canProvideFeedback = false;
+          feedbackReason = 'Invalid enrollment status';
       }
+    } else {
+      // No enrollment record - check if user is admin or has special permissions
+      if (req.user.role === 'admin' || req.user.role === 'trainer') {
+        canProvideFeedback = true;
+        feedbackReason = 'Admin/Trainer feedback';
+      } else {
+        canProvideFeedback = false;
+        feedbackReason = 'No enrollment record found';
+      }
+    }
+
+    if (!canProvideFeedback) {
+      return res.status(403).json({
+        success: false,
+        message: `Cannot provide feedback: ${feedbackReason}`,
+        details: {
+          enrollmentStatus: enrollment?.status || 'none',
+          courseEndDate: course.endDate,
+          currentDate: new Date(),
+          reason: feedbackReason
+        }
+      });
     }
 
     // Check if user has already submitted feedback for this course
@@ -114,6 +161,28 @@ exports.createFeedback = async (req, res) => {
       });
     }
 
+    // Auto-complete enrollment if course has ended and user is still enrolled
+    if (enrollment && enrollment.status === 'enrolled') {
+      const currentDate = new Date();
+      const courseEndDate = new Date(course.endDate);
+      
+      if (currentDate > courseEndDate) {
+        // Check if user has attended any sessions
+        const Attendance = require('../models/Attendance');
+        const attendanceCount = await Attendance.countDocuments({
+          enrollment: enrollment._id,
+          status: 'present'
+        });
+        
+        if (attendanceCount > 0) {
+          // Auto-complete the enrollment
+          enrollment.status = 'completed';
+          enrollment.completionDate = new Date();
+          await enrollment.save();
+        }
+      }
+    }
+
     // Add user and course to req.body
     req.body.user = req.user.id;
     req.body.course = req.params.courseId;
@@ -123,9 +192,17 @@ exports.createFeedback = async (req, res) => {
 
     const feedback = await Feedback.create(req.body);
 
+    const user = await require('../models/User').findById(req.user.id).select('disabilityType accessibilityNeeds');
     res.status(201).json({
       success: true,
-      data: feedback
+      data: feedback,
+      metadata: {
+        enrollmentStatus: enrollment?.status || 'none',
+        feedbackReason,
+        userDisabilityType: user?.disabilityType || null,
+        userAccessibilityNeeds: user?.accessibilityNeeds || null,
+        autoCompleted: enrollment?.status === 'completed' && enrollment?.completionDate === new Date()
+      }
     });
   } catch (err) {
     res.status(400).json({
@@ -351,6 +428,61 @@ exports.getFeedbackByCourse = async (req, res) => {
         select: 'firstName lastName',
         transform: doc => doc.isAnonymous ? { firstName: 'Anonymous', lastName: 'User' } : doc
       })
+      .skip(startIndex)
+      .limit(limit)
+      .sort({ submissionDate: -1 });
+
+    // Pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      count: feedback.length,
+      pagination,
+      data: feedback
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
+
+// @desc    Get all feedback (admin only)
+// @route   GET /api/feedback
+// @access  Private (Admin)
+exports.getAllFeedback = async (req, res) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Feedback.countDocuments();
+
+    const feedback = await Feedback.find()
+      .populate({
+        path: 'user',
+        select: 'firstName lastName',
+        transform: doc => doc.isAnonymous ? { firstName: 'Anonymous', lastName: 'User' } : doc
+      })
+      .populate('course', 'title')
+      .populate('enrollment')
       .skip(startIndex)
       .limit(limit)
       .sort({ submissionDate: -1 });

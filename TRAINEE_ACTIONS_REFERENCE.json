@@ -1,0 +1,1123 @@
+{
+  "trainee_actions": {
+    "authentication": {
+      "required": true,
+      "method": "Bearer Token",
+      "role": "trainee",
+      "header": "Authorization: Bearer <token>"
+    },
+    "actions": {
+      "profile_management": {
+        "get_profile": {
+          "method": "GET",
+          "url": "/api/users/profile",
+          "description": "Get trainee's own profile information",
+          "query_parameters": {},
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "firstName": "string",
+              "lastName": "string",
+              "email": "string",
+              "phone": "string",
+              "role": "trainee",
+              "organization": {
+                "_id": "string",
+                "name": "string"
+              },
+              "hasDisability": "boolean",
+              "disabilityType": "string",
+              "accessibilityNeeds": "string",
+              "isVerified": "boolean",
+              "createdAt": "ISO date string"
+            }
+          }
+        },
+        "update_profile": {
+          "method": "PUT",
+          "url": "/api/users/profile",
+          "description": "Update trainee's own profile information",
+          "request_body": {
+            "firstName": {
+              "type": "string",
+              "required": false,
+              "description": "First name"
+            },
+            "lastName": {
+              "type": "string",
+              "required": false,
+              "description": "Last name"
+            },
+            "phone": {
+              "type": "string",
+              "required": false,
+              "description": "Phone number"
+            },
+            "hasDisability": {
+              "type": "boolean",
+              "required": false,
+              "description": "Whether user has a disability"
+            },
+            "disabilityType": {
+              "type": "string",
+              "enum": ["visual", "hearing", "physical", "cognitive", "other", "none"],
+              "required": false,
+              "description": "Type of disability"
+            },
+            "accessibilityNeeds": {
+              "type": "string",
+              "required": false,
+              "description": "Specific accessibility needs"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "firstName": "string",
+              "lastName": "string",
+              "email": "string",
+              "phone": "string",
+              "role": "trainee",
+              "hasDisability": "boolean",
+              "disabilityType": "string",
+              "accessibilityNeeds": "string",
+              "updatedAt": "ISO date string"
+            }
+          }
+        },
+        "update_disability_info": {
+          "method": "PUT",
+          "url": "/api/users/{id}/disability",
+          "description": "Update trainee's disability information",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "User ID (must be own ID)"
+            }
+          },
+          "request_body": {
+            "hasDisability": {
+              "type": "boolean",
+              "required": true,
+              "description": "Whether user has a disability"
+            },
+            "disabilityType": {
+              "type": "string",
+              "enum": ["visual", "hearing", "physical", "cognitive", "other", "none"],
+              "required": false,
+              "description": "Type of disability"
+            },
+            "accessibilityNeeds": {
+              "type": "string",
+              "required": false,
+              "description": "Specific accessibility needs"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "hasDisability": "boolean",
+              "disabilityType": "string",
+              "accessibilityNeeds": "string"
+            }
+          }
+        }
+      },
+      "course_management": {
+        "get_available_courses": {
+          "method": "GET",
+          "url": "/api/courses",
+          "description": "Get all available courses for enrollment",
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            },
+            "organizationId": {
+              "type": "string",
+              "required": false,
+              "description": "Filter by organization"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["scheduled", "active", "completed", "cancelled"],
+              "required": false,
+              "description": "Filter by course status"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "pagination": {
+              "next": {
+                "page": "number",
+                "limit": "number"
+              },
+              "prev": {
+                "page": "number",
+                "limit": "number"
+              }
+            },
+            "data": [
+              {
+                "_id": "string",
+                "title": "string",
+                "description": "string",
+                "thumbnail": {
+                  "public_id": "string",
+                  "url": "string"
+                },
+                "duration": "number",
+                "capacity": "number",
+                "startDate": "ISO date string",
+                "endDate": "ISO date string",
+                "location": "string",
+                "isVirtual": "boolean",
+                "virtualMeetingLink": "string",
+                "instructor": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                },
+                "organization": {
+                  "_id": "string",
+                  "name": "string"
+                },
+                "status": "string",
+                "accessibilityFeatures": ["string"],
+                "prerequisites": ["string"],
+                "tags": ["string"]
+              }
+            ]
+          }
+        },
+        "get_course_details": {
+          "method": "GET",
+          "url": "/api/courses/{id}",
+          "description": "Get detailed information about a specific course",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Course ID"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "title": "string",
+              "description": "string",
+              "thumbnail": {
+                "public_id": "string",
+                "url": "string"
+              },
+              "duration": "number",
+              "capacity": "number",
+              "startDate": "ISO date string",
+              "endDate": "ISO date string",
+              "location": "string",
+              "isVirtual": "boolean",
+              "virtualMeetingLink": "string",
+              "instructor": {
+                "_id": "string",
+                "firstName": "string",
+                "lastName": "string",
+                "email": "string"
+              },
+              "organization": {
+                "_id": "string",
+                "name": "string"
+              },
+              "materials": [
+                {
+                  "title": "string",
+                  "fileUrl": "string",
+                  "fileType": "string",
+                  "uploadDate": "ISO date string"
+                }
+              ],
+              "status": "string",
+              "accessibilityFeatures": ["string"],
+              "prerequisites": ["string"],
+              "tags": ["string"],
+              "createdAt": "ISO date string"
+            }
+          }
+        },
+        "get_course_materials": {
+          "method": "GET",
+          "url": "/api/courses/{id}/materials",
+          "description": "Get course materials (requires enrollment)",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Course ID"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": [
+              {
+                "_id": "string",
+                "title": "string",
+                "fileUrl": "string",
+                "fileType": "string",
+                "uploadDate": "ISO date string",
+                "downloadUrl": "string"
+              }
+            ]
+          }
+        },
+        "download_course_material": {
+          "method": "GET",
+          "url": "/api/courses/{id}/materials/{materialId}/download",
+          "description": "Download a specific course material (requires enrollment)",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Course ID"
+            },
+            "materialId": {
+              "type": "string",
+              "description": "Material ID"
+            }
+          },
+          "response": "File download"
+        },
+        "view_course_feedback": {
+          "method": "GET",
+          "url": "/api/courses/{courseId}/feedback",
+          "description": "View all feedback for a course (public access)",
+          "path_parameters": {
+            "courseId": {
+              "type": "string",
+              "description": "Course ID"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "data": [
+              {
+                "_id": "string",
+                "overallRating": "number",
+                "contentRating": "number",
+                "instructorRating": "number",
+                "facilitiesRating": "number",
+                "accessibilityRating": "number",
+                "commentContent": "string",
+                "commentInstructor": "string",
+                "commentGeneral": "string",
+                "suggestions": "string",
+                "isAnonymous": "boolean",
+                "submissionDate": "ISO date string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "enrollment_management": {
+        "enroll_in_course": {
+          "method": "POST",
+          "url": "/api/courses/{courseId}/enroll",
+          "description": "Enroll in a course (direct enrollment with capacity check)",
+          "path_parameters": {
+            "courseId": {
+              "type": "string",
+              "description": "Course ID to enroll in"
+            }
+          },
+          "request_body": {},
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "user": "string",
+              "course": "string",
+              "enrollmentDate": "ISO date string",
+              "status": "enrolled",
+              "completionDate": "ISO date string",
+              "certificateIssued": "boolean",
+              "certificateId": "string",
+              "preTestScore": "number",
+              "postTestScore": "number",
+              "notes": "string"
+            },
+            "message": "Enrollment successful! Check your email for confirmation.",
+            "warning": "string (if accessibility mismatch)"
+          }
+        },
+        "get_my_enrollments": {
+          "method": "GET",
+          "url": "/api/enrollments",
+          "description": "Get trainee's own enrollments",
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["enrolled", "completed", "dropped", "failed"],
+              "required": false,
+              "description": "Filter by enrollment status"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "data": [
+              {
+                "_id": "string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string",
+                  "email": "string"
+                },
+                "course": {
+                  "_id": "string",
+                  "title": "string",
+                  "startDate": "ISO date string",
+                  "endDate": "ISO date string",
+                  "instructor": {
+                    "_id": "string",
+                    "firstName": "string",
+                    "lastName": "string"
+                  },
+                  "capacity": "number"
+                },
+                "enrollmentDate": "ISO date string",
+                "status": "string",
+                "completionDate": "ISO date string",
+                "certificateIssued": "boolean",
+                "certificateId": "string",
+                "preTestScore": "number",
+                "postTestScore": "number",
+                "notes": "string"
+              }
+            ]
+          }
+        },
+        "get_enrollment_details": {
+          "method": "GET",
+          "url": "/api/enrollments/{id}",
+          "description": "Get details of a specific enrollment",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Enrollment ID (must be own enrollment)"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "user": {
+                "_id": "string",
+                "firstName": "string",
+                "lastName": "string",
+                "email": "string"
+              },
+              "course": {
+                "_id": "string",
+                "title": "string",
+                "description": "string",
+                "startDate": "ISO date string",
+                "endDate": "ISO date string",
+                "instructor": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                },
+                "capacity": "number",
+                "status": "string"
+              },
+              "enrollmentDate": "ISO date string",
+              "status": "string",
+              "completionDate": "ISO date string",
+              "certificateIssued": "boolean",
+              "certificateId": "string",
+              "preTestScore": "number",
+              "postTestScore": "number",
+              "notes": "string"
+            }
+          }
+        }
+      },
+      "feedback_management": {
+        "submit_feedback": {
+          "method": "POST",
+          "url": "/api/courses/{courseId}/feedback",
+          "description": "Submit feedback for a course (requires enrollment)",
+          "path_parameters": {
+            "courseId": {
+              "type": "string",
+              "description": "Course ID to provide feedback for"
+            }
+          },
+          "request_body": {
+            "overallRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": true,
+              "description": "Overall rating of the course (1-5)"
+            },
+            "contentRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for course content (1-5)"
+            },
+            "instructorRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for instructor (1-5)"
+            },
+            "facilitiesRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for facilities (1-5)"
+            },
+            "accessibilityRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for accessibility (1-5)"
+            },
+            "commentContent": {
+              "type": "string",
+              "required": false,
+              "description": "Comments about course content"
+            },
+            "commentInstructor": {
+              "type": "string",
+              "required": false,
+              "description": "Comments about the instructor"
+            },
+            "commentGeneral": {
+              "type": "string",
+              "required": false,
+              "description": "General comments about the course"
+            },
+            "suggestions": {
+              "type": "string",
+              "required": false,
+              "description": "Suggestions for improvement"
+            },
+            "isAnonymous": {
+              "type": "boolean",
+              "default": false,
+              "required": false,
+              "description": "Whether the feedback is anonymous"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "user": "string",
+              "course": "string",
+              "enrollment": "string",
+              "submissionDate": "ISO date string",
+              "overallRating": "number",
+              "contentRating": "number",
+              "instructorRating": "number",
+              "facilitiesRating": "number",
+              "accessibilityRating": "number",
+              "commentContent": "string",
+              "commentInstructor": "string",
+              "commentGeneral": "string",
+              "suggestions": "string",
+              "isAnonymous": "boolean"
+            },
+            "metadata": {
+              "enrollmentStatus": "string",
+              "feedbackReason": "string",
+              "userDisabilityType": "string",
+              "userAccessibilityNeeds": "string",
+              "autoCompleted": "boolean"
+            }
+          }
+        },
+        "get_my_feedback": {
+          "method": "GET",
+          "url": "/api/feedback/user/{userId}",
+          "description": "Get trainee's own feedback submissions",
+          "path_parameters": {
+            "userId": {
+              "type": "string",
+              "description": "User ID (must be own ID)"
+            }
+          },
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "pagination": {
+              "next": {
+                "page": "number",
+                "limit": "number"
+              },
+              "prev": {
+                "page": "number",
+                "limit": "number"
+              }
+            },
+            "data": [
+              {
+                "_id": "string",
+                "course": {
+                  "_id": "string",
+                  "title": "string",
+                  "startDate": "ISO date string",
+                  "endDate": "ISO date string"
+                },
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                },
+                "submissionDate": "ISO date string",
+                "overallRating": "number",
+                "contentRating": "number",
+                "instructorRating": "number",
+                "facilitiesRating": "number",
+                "accessibilityRating": "number",
+                "commentContent": "string",
+                "commentInstructor": "string",
+                "commentGeneral": "string",
+                "suggestions": "string",
+                "isAnonymous": "boolean"
+              }
+            ]
+          }
+        },
+        "update_feedback": {
+          "method": "PUT",
+          "url": "/api/feedback/{id}",
+          "description": "Update trainee's own feedback submission",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Feedback ID (must be own feedback)"
+            }
+          },
+          "request_body": {
+            "overallRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Overall rating of the course (1-5)"
+            },
+            "contentRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for course content (1-5)"
+            },
+            "instructorRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for instructor (1-5)"
+            },
+            "facilitiesRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for facilities (1-5)"
+            },
+            "accessibilityRating": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 5,
+              "required": false,
+              "description": "Rating for accessibility (1-5)"
+            },
+            "commentContent": {
+              "type": "string",
+              "required": false,
+              "description": "Comments about course content"
+            },
+            "commentInstructor": {
+              "type": "string",
+              "required": false,
+              "description": "Comments about the instructor"
+            },
+            "commentGeneral": {
+              "type": "string",
+              "required": false,
+              "description": "General comments about the course"
+            },
+            "suggestions": {
+              "type": "string",
+              "required": false,
+              "description": "Suggestions for improvement"
+            },
+            "isAnonymous": {
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the feedback is anonymous"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "user": "string",
+              "course": "string",
+              "enrollment": "string",
+              "submissionDate": "ISO date string",
+              "overallRating": "number",
+              "contentRating": "number",
+              "instructorRating": "number",
+              "facilitiesRating": "number",
+              "accessibilityRating": "number",
+              "commentContent": "string",
+              "commentInstructor": "string",
+              "commentGeneral": "string",
+              "suggestions": "string",
+              "isAnonymous": "boolean"
+            }
+          }
+        },
+        "delete_feedback": {
+          "method": "DELETE",
+          "url": "/api/feedback/{id}",
+          "description": "Delete trainee's own feedback submission",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Feedback ID (must be own feedback)"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {}
+          }
+        }
+      },
+      "attendance_management": {
+        "get_my_attendance": {
+          "method": "GET",
+          "url": "/api/attendance",
+          "description": "Get trainee's own attendance records",
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            },
+            "courseId": {
+              "type": "string",
+              "required": false,
+              "description": "Filter by course"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["present", "absent", "late", "excused"],
+              "required": false,
+              "description": "Filter by attendance status"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "data": [
+              {
+                "_id": "string",
+                "enrollment": {
+                  "_id": "string",
+                  "user": {
+                    "_id": "string",
+                    "firstName": "string",
+                    "lastName": "string"
+                  },
+                  "course": {
+                    "_id": "string",
+                    "title": "string"
+                  }
+                },
+                "session": {
+                  "_id": "string",
+                  "sessionNumber": "number",
+                  "title": "string",
+                  "date": "ISO date string",
+                  "startTime": "string",
+                  "endTime": "string"
+                },
+                "status": "string",
+                "checkInTime": "ISO date string",
+                "checkOutTime": "ISO date string",
+                "duration": "number",
+                "verificationMethod": "string",
+                "notes": "string",
+                "excuseReason": "string"
+              }
+            ]
+          }
+        },
+        "qr_checkin": {
+          "method": "POST",
+          "url": "/api/attendance/qr-checkin",
+          "description": "Check in using QR code for a session",
+          "request_body": {
+            "qrCode": {
+              "type": "string",
+              "required": true,
+              "description": "QR code data from session"
+            },
+            "enrollmentId": {
+              "type": "string",
+              "required": true,
+              "description": "Enrollment ID for the course"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "enrollment": "string",
+              "session": "string",
+              "status": "present",
+              "checkInTime": "ISO date string",
+              "verificationMethod": "qr",
+              "duration": "number"
+            },
+            "message": "Successfully checked in for session"
+          }
+        }
+      },
+      "certificate_management": {
+        "get_my_certificates": {
+          "method": "GET",
+          "url": "/api/certificates",
+          "description": "Get trainee's own certificates",
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["issued", "revoked", "expired"],
+              "required": false,
+              "description": "Filter by certificate status"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "data": [
+              {
+                "_id": "string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string",
+                  "hasDisability": "boolean",
+                  "disabilityType": "string"
+                },
+                "course": {
+                  "_id": "string",
+                  "title": "string"
+                },
+                "enrollment": "string",
+                "certificateNumber": "string",
+                "issueDate": "ISO date string",
+                "expiryDate": "ISO date string",
+                "pdfUrl": "string",
+                "verificationUrl": "string",
+                "verificationQrCode": "string",
+                "status": "string"
+              }
+            ]
+          }
+        },
+        "download_certificate": {
+          "method": "GET",
+          "url": "/api/certificates/{id}/download",
+          "description": "Download certificate PDF",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Certificate ID (must be own certificate)"
+            }
+          },
+          "response": "PDF file download"
+        },
+        "verify_certificate": {
+          "method": "GET",
+          "url": "/api/certificates/{id}/verify",
+          "description": "Verify certificate authenticity",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Certificate ID"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "isValid": "boolean",
+              "certificate": {
+                "_id": "string",
+                "certificateNumber": "string",
+                "issueDate": "ISO date string",
+                "expiryDate": "ISO date string",
+                "status": "string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                },
+                "course": {
+                  "_id": "string",
+                  "title": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "schedule_management": {
+        "get_course_schedule": {
+          "method": "GET",
+          "url": "/api/schedules/course/{courseId}",
+          "description": "Get schedule for a specific course",
+          "path_parameters": {
+            "courseId": {
+              "type": "string",
+              "description": "Course ID"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": [
+              {
+                "_id": "string",
+                "course": "string",
+                "sessionNumber": "number",
+                "title": "string",
+                "description": "string",
+                "date": "ISO date string",
+                "startTime": "string",
+                "endTime": "string",
+                "location": "string",
+                "isVirtual": "boolean",
+                "virtualMeetingLink": "string",
+                "qrCode": "string",
+                "resources": [
+                  {
+                    "_id": "string",
+                    "name": "string",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "get_my_schedules": {
+          "method": "GET",
+          "url": "/api/schedules/my-schedule",
+          "description": "Get trainee's schedule for all enrolled courses",
+          "query_parameters": {
+            "startDate": {
+              "type": "string",
+              "format": "ISO date (YYYY-MM-DD)",
+              "required": false,
+              "description": "Filter from start date"
+            },
+            "endDate": {
+              "type": "string",
+              "format": "ISO date (YYYY-MM-DD)",
+              "required": false,
+              "description": "Filter to end date"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": [
+              {
+                "_id": "string",
+                "course": {
+                  "_id": "string",
+                  "title": "string"
+                },
+                "sessionNumber": "number",
+                "title": "string",
+                "description": "string",
+                "date": "ISO date string",
+                "startTime": "string",
+                "endTime": "string",
+                "location": "string",
+                "isVirtual": "boolean",
+                "virtualMeetingLink": "string",
+                "qrCode": "string",
+                "attendance": {
+                  "status": "string",
+                  "checkInTime": "ISO date string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "notification_management": {
+        "get_my_notifications": {
+          "method": "GET",
+          "url": "/api/notifications",
+          "description": "Get trainee's own notifications",
+          "query_parameters": {
+            "page": {
+              "type": "integer",
+              "default": 1,
+              "description": "Page number for pagination"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10,
+              "description": "Number of items per page"
+            },
+            "read": {
+              "type": "boolean",
+              "required": false,
+              "description": "Filter by read status"
+            }
+          },
+          "response": {
+            "success": true,
+            "count": "number",
+            "data": [
+              {
+                "_id": "string",
+                "user": "string",
+                "title": "string",
+                "message": "string",
+                "type": "string",
+                "read": "boolean",
+                "createdAt": "ISO date string"
+              }
+            ]
+          }
+        },
+        "mark_notification_read": {
+          "method": "PUT",
+          "url": "/api/notifications/{id}/read",
+          "description": "Mark a notification as read",
+          "path_parameters": {
+            "id": {
+              "type": "string",
+              "description": "Notification ID (must be own notification)"
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "_id": "string",
+              "read": true,
+              "readAt": "ISO date string"
+            }
+          }
+        },
+        "mark_all_notifications_read": {
+          "method": "PUT",
+          "url": "/api/notifications/read-all",
+          "description": "Mark all notifications as read",
+          "response": {
+            "success": true,
+            "data": {
+              "updatedCount": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "error_responses": {
+    "400": {
+      "success": false,
+      "message": "Bad Request - Invalid parameters"
+    },
+    "401": {
+      "success": false,
+      "message": "Unauthorized - Invalid or missing token"
+    },
+    "403": {
+      "success": false,
+      "message": "Forbidden - Insufficient permissions"
+    },
+    "404": {
+      "success": false,
+      "message": "Not Found - Resource not found"
+    },
+    "500": {
+      "success": false,
+      "message": "Internal Server Error"
+    }
+  },
+  "integration_tips": {
+    "authentication": "Always include Bearer token in Authorization header",
+    "pagination": "Use page and limit parameters for large datasets",
+    "error_handling": "Always check the 'success' field before processing data",
+    "file_downloads": "Handle file downloads appropriately based on content type",
+    "qr_codes": "QR codes are base64 encoded strings for session check-in",
+    "accessibility": "System supports comprehensive disability and accessibility features",
+    "real_time": "Some endpoints support real-time updates",
+    "email_notifications": "System sends email notifications for important events"
+  }
+} 

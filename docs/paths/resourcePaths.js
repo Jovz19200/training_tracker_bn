@@ -227,5 +227,84 @@ module.exports = {
         }
       }
     }
+  },
+  '/api/resources/{id}/assign/{courseId}': {
+    post: {
+      tags: ['Resources'],
+      summary: 'Assign a resource to a course',
+      description: 'Assign a specific resource to a course by ID',
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'Resource ID',
+          schema: { type: 'string' }
+        },
+        {
+          name: 'courseId',
+          in: 'path',
+          required: true,
+          description: 'Course ID',
+          schema: { type: 'string' }
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Resource assigned to course',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: { $ref: '#/components/schemas/Course' }
+                }
+              }
+            }
+          }
+        },
+        404: { description: 'Resource or course not found' },
+        401: { description: 'Unauthorized' }
+      }
+    }
+  },
+  '/api/resources/course/{courseId}': {
+    get: {
+      tags: ['Resources'],
+      summary: 'List resources for a course',
+      description: 'Get all resources assigned to a specific course',
+      parameters: [
+        {
+          name: 'courseId',
+          in: 'path',
+          required: true,
+          description: 'Course ID',
+          schema: { type: 'string' }
+        }
+      ],
+      responses: {
+        200: {
+          description: 'List of resources for the course',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/Resource' }
+                  }
+                }
+              }
+            }
+          }
+        },
+        404: { description: 'Course not found' },
+        401: { description: 'Unauthorized' }
+      }
+    }
   }
 }; 
