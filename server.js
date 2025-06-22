@@ -8,16 +8,19 @@ const passport = require('passport');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const courseRoutes = require('./routes/courses');
-const requestRoutes = require('./routes/requests');
 const enrollmentRoutes = require('./routes/enrollments');
 const scheduleRoutes = require('./routes/schedules');
 const resourceRoutes = require('./routes/resources');
 const analyticsRoutes = require('./routes/analytics');
 const notificationRoutes = require('./routes/notifications');
 const certificateRoutes = require('./routes/certificates');
+const courseFeedbackRoutes = require('./routes/courseFeedback');
 const feedbackRoutes = require('./routes/feedback');
 const organizationRoutes = require('./routes/organizations');
 const swaggerRouter = require('./docs/swagger');
+
+// Import scheduler
+const { initializeScheduler } = require('./utils/scheduler');
 
 require('dotenv').config();
 
@@ -28,6 +31,9 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Initialize scheduled tasks
+initializeScheduler();
 
 // Middleware
 app.use(cors({
@@ -49,9 +55,8 @@ app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/courses', feedbackRoutes);
+app.use('/api/courses', courseFeedbackRoutes);
 app.use('/api/feedback', feedbackRoutes);
-app.use('/api/requests', requestRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/resources', resourceRoutes);

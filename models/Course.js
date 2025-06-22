@@ -69,6 +69,10 @@ const CourseSchema = new mongoose.Schema({
   },
   accessibilityFeatures: [String],
   tags: [String],
+  resources: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Resource'
+  }],
   createdAt: {
     type: Date,
     default: Date.now

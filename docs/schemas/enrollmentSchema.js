@@ -1,72 +1,109 @@
 module.exports = {
-  type: 'object',
-  properties: {
-    _id: {
-      type: 'string',
-      description: 'Unique identifier for the enrollment'
-    },
-    user: {
-      type: 'string',
-      description: 'Reference to the enrolled user'
-    },
-    course: {
-      type: 'string',
-      description: 'Reference to the course'
-    },
-    enrollmentDate: {
-      type: 'string',
-      format: 'date-time',
-      description: 'Date when the user enrolled in the course'
-    },
-    status: {
-      type: 'string',
-      enum: ['active', 'completed', 'dropped'],
-      default: 'active',
-      description: 'Current status of the enrollment'
-    },
-    completionDate: {
-      type: 'string',
-      format: 'date-time',
-      description: 'Date when the course was completed (if applicable)'
-    },
-    lastAccessDate: {
-      type: 'string',
-      format: 'date-time',
-      description: 'Last date when the user accessed the course'
-    },
-    progress: {
-      type: 'number',
-      minimum: 0,
-      maximum: 100,
-      default: 0,
-      description: 'Course completion progress percentage'
-    },
-    certificate: {
-      type: 'string',
-      description: 'Reference to the certificate (if course is completed)'
-    },
-    startDate: {
-      type: 'string',
-      format: 'date-time',
-      description: 'Date when the user started the course'
-    },
-    endDate: {
-      type: 'string',
-      format: 'date-time',
-      description: 'Expected completion date of the course'
-    },
-    notes: {
-      type: 'string',
-      description: 'Additional notes about the enrollment'
-    },
-    createdBy: {
-      type: 'string',
-      description: 'Reference to the admin who created the enrollment'
-    },
-    updatedBy: {
-      type: 'string',
-      description: 'Reference to the admin who last updated the enrollment'
+  Enrollment: {
+    type: 'object',
+    required: ['user', 'course', 'status'],
+    properties: {
+      _id: {
+        type: 'string',
+        description: 'Auto-generated enrollment ID'
+      },
+      user: {
+        type: 'string',
+        description: 'Reference to User model'
+      },
+      course: {
+        type: 'string',
+        description: 'Reference to Course model'
+      },
+      status: {
+        type: 'string',
+        enum: ['enrolled', 'completed', 'dropped', 'failed'],
+        description: 'Current enrollment status'
+      },
+      enrollmentDate: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Date when user enrolled'
+      },
+      completionDate: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Date when course was completed'
+      },
+      preTestScore: {
+        type: 'number',
+        minimum: 0,
+        maximum: 100,
+        description: 'Pre-course assessment score'
+      },
+      postTestScore: {
+        type: 'number',
+        minimum: 0,
+        maximum: 100,
+        description: 'Post-course assessment score'
+      },
+      notes: {
+        type: 'string',
+        description: 'Additional notes about the enrollment'
+      },
+      createdAt: {
+        type: 'string',
+        format: 'date-time'
+      },
+      updatedAt: {
+        type: 'string',
+        format: 'date-time'
+      }
     }
   },
-  required: ['user', 'course', 'enrollmentDate', 'status']
+  EnrollmentStats: {
+    type: 'object',
+    properties: {
+      totalCapacity: {
+        type: 'number',
+        description: 'Total course capacity'
+      },
+      totalEnrolled: {
+        type: 'number',
+        description: 'Number of currently enrolled students'
+      },
+      totalCompleted: {
+        type: 'number',
+        description: 'Number of completed enrollments'
+      },
+      totalDropped: {
+        type: 'number',
+        description: 'Number of dropped enrollments'
+      },
+      totalFailed: {
+        type: 'number',
+        description: 'Number of failed enrollments'
+      },
+      availableSpots: {
+        type: 'number',
+        description: 'Remaining available spots'
+      },
+      enrollmentRate: {
+        type: 'number',
+        description: 'Percentage of capacity filled'
+      }
+    }
+  },
+  AutoUpdateResult: {
+    type: 'object',
+    properties: {
+      updated: {
+        type: 'number',
+        description: 'Number of enrollments updated'
+      },
+      completed: {
+        type: 'number',
+        description: 'Number of enrollments marked as completed'
+      },
+      failed: {
+        type: 'number',
+        description: 'Number of enrollments marked as failed'
+      }
+    }
+  }
 }; 

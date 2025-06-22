@@ -1,0 +1,695 @@
+{
+  "analytics_endpoints": {
+    "authentication": {
+      "required": true,
+      "method": "Bearer Token",
+      "roles": ["admin", "trainer"],
+      "header": "Authorization: Bearer <token>"
+    },
+    "endpoints": {
+      "dashboard": {
+        "method": "GET",
+        "url": "/api/analytics/dashboard",
+        "description": "Get comprehensive dashboard metrics and overview",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": {
+            "overview": {
+              "totalUsers": "number",
+              "totalCourses": "number",
+              "activeEnrollments": "number",
+              "completionRate": "number (percentage)"
+            },
+            "recentActivity": {
+              "newUsersThisMonth": "number",
+              "newCoursesThisMonth": "number",
+              "newEnrollmentsThisMonth": "number"
+            },
+            "ratings": {
+              "overall": "number (1-5)",
+              "content": "number (1-5)",
+              "instructor": "number (1-5)",
+              "totalFeedback": "number"
+            },
+            "recentFeedback": [
+              {
+                "_id": "string",
+                "overallRating": "number",
+                "contentRating": "number",
+                "instructorRating": "number",
+                "submissionDate": "ISO date string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                },
+                "course": {
+                  "_id": "string",
+                  "title": "string"
+                }
+              }
+            ],
+            "upcomingCourses": [
+              {
+                "_id": "string",
+                "title": "string",
+                "startDate": "ISO date string",
+                "instructor": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "enrollment_trends": {
+        "method": "GET",
+        "url": "/api/analytics/enrollment-trends",
+        "description": "Get enrollment trends over time",
+        "query_parameters": {
+          "period": {
+            "type": "string",
+            "options": ["monthly", "weekly"],
+            "default": "monthly"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Filter by specific course"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "period": "string (YYYY-MM or YYYY-WW)",
+              "enrollments": "number",
+              "completed": "number",
+              "dropped": "number",
+              "completionRate": "string (percentage)"
+            }
+          ]
+        }
+      },
+      "feedback_trends": {
+        "method": "GET",
+        "url": "/api/analytics/feedback-trends",
+        "description": "Get feedback trends and analysis",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Filter by specific course"
+          },
+          "instructorId": {
+            "type": "string",
+            "description": "Filter by specific instructor"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "monthlyTrends": [
+              {
+                "period": "string (YYYY-MM)",
+                "feedbackCount": "number",
+                "avgOverallRating": "number (1-5)",
+                "avgContentRating": "number (1-5)",
+                "avgInstructorRating": "number (1-5)",
+                "avgFacilitiesRating": "number (1-5)",
+                "avgAccessibilityRating": "number (1-5)"
+              }
+            ],
+            "ratingDistribution": [
+              {
+                "_id": "number (1-5)",
+                "count": "number"
+              }
+            ],
+            "topCourses": [
+              {
+                "courseId": "string",
+                "courseTitle": "string",
+                "avgRating": "number (1-5)",
+                "totalFeedback": "number"
+              }
+            ]
+          }
+        }
+      },
+      "completion_rates": {
+        "method": "GET",
+        "url": "/api/analytics/completion-rates",
+        "description": "Get completion rate analysis",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Filter by specific course"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "overall": {
+              "total": "number",
+              "completed": "number",
+              "dropped": "number",
+              "inProgress": "number",
+              "completionRate": "number (percentage)"
+            },
+            "byCourse": [
+              {
+                "courseId": "string",
+                "courseTitle": "string",
+                "total": "number",
+                "completed": "number",
+                "dropped": "number",
+                "completionRate": "number (percentage)"
+              }
+            ],
+            "byOrganization": [
+              {
+                "organizationId": "string",
+                "organizationName": "string",
+                "total": "number",
+                "completed": "number",
+                "dropped": "number",
+                "completionRate": "number (percentage)"
+              }
+            ]
+          }
+        }
+      },
+      "user_growth": {
+        "method": "GET",
+        "url": "/api/analytics/user-growth",
+        "description": "Get user growth trends",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "period": "string (YYYY-MM)",
+              "newUsers": "number",
+              "activeUsers": "number",
+              "totalUsers": "number"
+            }
+          ]
+        }
+      },
+      "course_performance": {
+        "method": "GET",
+        "url": "/api/analytics/course-performance",
+        "description": "Get course performance analysis",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "courseId": "string",
+              "courseTitle": "string",
+              "totalEnrollments": "number",
+              "completedEnrollments": "number",
+              "averageRating": "number (1-5)",
+              "totalFeedback": "number",
+              "completionRate": "number (percentage)"
+            }
+          ]
+        }
+      },
+      "organization_analytics": {
+        "method": "GET",
+        "url": "/api/analytics/organization/:organizationId",
+        "description": "Get analytics for specific organization",
+        "path_parameters": {
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "organization": {
+              "_id": "string",
+              "name": "string"
+            },
+            "metrics": {
+              "totalUsers": "number",
+              "totalCourses": "number",
+              "totalEnrollments": "number",
+              "completionRate": "number (percentage)"
+            },
+            "courses": [
+              {
+                "courseId": "string",
+                "title": "string",
+                "enrollments": "number",
+                "completions": "number"
+              }
+            ]
+          }
+        }
+      },
+      "realtime": {
+        "method": "GET",
+        "url": "/api/analytics/realtime",
+        "description": "Get real-time analytics",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": {
+            "currentEnrollments": "number",
+            "activeCourses": "number",
+            "recentActivity": [
+              {
+                "type": "string",
+                "user": "string",
+                "course": "string",
+                "timestamp": "ISO date string"
+              }
+            ]
+          }
+        }
+      },
+      "certificates": {
+        "method": "GET",
+        "url": "/api/analytics/certificates",
+        "description": "Get certificate analytics",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "trends": [
+              {
+                "period": "string (YYYY-MM)",
+                "totalIssued": "number",
+                "disabilityUsers": "number",
+                "accessibilityRate": "string (percentage)"
+              }
+            ],
+            "disabilityAnalytics": [
+              {
+                "_id": "string (disability type)",
+                "count": "number",
+                "percentage": "number"
+              }
+            ],
+            "verification": {
+              "total": "number",
+              "verified": "number",
+              "verificationRate": "string (percentage)"
+            },
+            "recentCertificates": [
+              {
+                "_id": "string",
+                "issueDate": "ISO date string",
+                "user": {
+                  "_id": "string",
+                  "firstName": "string",
+                  "lastName": "string",
+                  "hasDisability": "boolean",
+                  "disabilityType": "string"
+                },
+                "course": {
+                  "_id": "string",
+                  "title": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attendance": {
+        "method": "GET",
+        "url": "/api/analytics/attendance",
+        "description": "Get attendance analytics",
+        "query_parameters": {
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Filter by specific course"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "byMethod": [
+              {
+                "_id": "string (verification method)",
+                "count": "number",
+                "disabilityUsers": "number"
+              }
+            ],
+            "trends": [
+              {
+                "_id": {
+                  "year": "number",
+                  "month": "number",
+                  "status": "string"
+                },
+                "count": "number"
+              }
+            ],
+            "manualAttendance": {
+              "total": "number",
+              "percentage": "string (percentage)"
+            }
+          }
+        }
+      },
+      "disability_type_stats": {
+        "method": "GET",
+        "url": "/api/analytics/disability-type-stats",
+        "description": "Get user counts by disability type",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "_id": "string (disability type)",
+              "count": "number"
+            }
+          ]
+        }
+      },
+      "accessibility_needs_stats": {
+        "method": "GET",
+        "url": "/api/analytics/accessibility-needs-stats",
+        "description": "Get user counts by accessibility needs",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "_id": "string (accessibility need)",
+              "count": "number"
+            }
+          ]
+        }
+      },
+      "enrollment_stats_by_disability": {
+        "method": "GET",
+        "url": "/api/analytics/enrollment-stats-by-disability",
+        "description": "Get enrollment and completion counts by disability type",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "_id": "string (disability type)",
+              "enrollments": "number",
+              "completions": "number"
+            }
+          ]
+        }
+      },
+      "generate_report": {
+        "method": "POST",
+        "url": "/api/analytics/reports/generate",
+        "description": "Generate custom reports",
+        "request_body": {
+          "reportType": {
+            "type": "string",
+            "options": ["enrollment", "completion", "feedback", "comprehensive"],
+            "required": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "ISO date (YYYY-MM-DD)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "Filter by specific course"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Filter by specific organization"
+          },
+          "format": {
+            "type": "string",
+            "options": ["pdf", "json"],
+            "default": "pdf"
+          },
+          "includeCharts": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "response_json": {
+          "success": true,
+          "data": {
+            "reportId": "string",
+            "reportTitle": "string",
+            "reportData": {
+              "summary": {
+                "totalEnrollments": "number",
+                "statusBreakdown": [
+                  {
+                    "_id": "string",
+                    "count": "number"
+                  }
+                ]
+              },
+              "details": [
+                {
+                  "_id": "string",
+                  "status": "string",
+                  "enrollmentDate": "ISO date string",
+                  "user": {
+                    "_id": "string",
+                    "firstName": "string",
+                    "lastName": "string",
+                    "email": "string"
+                  },
+                  "course": {
+                    "_id": "string",
+                    "title": "string",
+                    "startDate": "ISO date string",
+                    "endDate": "ISO date string"
+                  },
+                  "organization": {
+                    "_id": "string",
+                    "name": "string"
+                  }
+                }
+              ]
+            },
+            "generatedBy": "string",
+            "generatedDate": "ISO date string"
+          }
+        },
+        "response_pdf": {
+          "success": true,
+          "data": {
+            "reportId": "string",
+            "downloadUrl": "string",
+            "message": "string"
+          }
+        }
+      },
+      "export_data": {
+        "method": "POST",
+        "url": "/api/analytics/export",
+        "description": "Export analytics data",
+        "request_body": {
+          "dataType": {
+            "type": "string",
+            "options": ["enrollments", "feedback", "certificates", "attendance"],
+            "required": true
+          },
+          "format": {
+            "type": "string",
+            "options": ["csv", "excel"],
+            "required": true
+          },
+          "filters": {
+            "startDate": {
+              "type": "string",
+              "format": "ISO date (YYYY-MM-DD)"
+            },
+            "endDate": {
+              "type": "string",
+              "format": "ISO date (YYYY-MM-DD)"
+            },
+            "courseId": {
+              "type": "string",
+              "description": "Filter by specific course"
+            },
+            "organizationId": {
+              "type": "string",
+              "description": "Filter by specific organization"
+            }
+          }
+        },
+        "response": {
+          "success": true,
+          "data": {
+            "exportId": "string",
+            "filename": "string",
+            "downloadUrl": "string",
+            "message": "string"
+          }
+        }
+      },
+      "download_export": {
+        "method": "GET",
+        "url": "/api/analytics/download/:filename",
+        "description": "Download exported file",
+        "path_parameters": {
+          "filename": {
+            "type": "string",
+            "description": "Export filename"
+          }
+        },
+        "response": "File download (CSV/Excel)"
+      },
+      "export_history": {
+        "method": "GET",
+        "url": "/api/analytics/exports",
+        "description": "Get export history",
+        "query_parameters": {},
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "filename": "string",
+              "size": "number (bytes)",
+              "createdAt": "ISO date string",
+              "modifiedAt": "ISO date string",
+              "downloadUrl": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "error_responses": {
+    "400": {
+      "success": false,
+      "message": "Bad Request - Invalid parameters"
+    },
+    "401": {
+      "success": false,
+      "message": "Unauthorized - Invalid or missing token"
+    },
+    "403": {
+      "success": false,
+      "message": "Forbidden - Insufficient permissions"
+    },
+    "404": {
+      "success": false,
+      "message": "Not Found - Resource not found"
+    },
+    "500": {
+      "success": false,
+      "message": "Internal Server Error"
+    }
+  },
+  "data_types": {
+    "string": "Text value",
+    "number": "Numeric value (integer or float)",
+    "boolean": "true or false",
+    "array": "List of values",
+    "object": "Key-value pairs",
+    "ISO date string": "Date in ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)",
+    "percentage": "Number representing percentage (e.g., 78.5 for 78.5%)"
+  },
+  "integration_tips": {
+    "authentication": "Always include Bearer token in Authorization header",
+    "date_formatting": "Use ISO 8601 format for all dates",
+    "pagination": "Most endpoints don't have built-in pagination - use date filters for large datasets",
+    "filtering": "Use query parameters to filter data by date ranges, courses, or organizations",
+    "error_handling": "Always check the 'success' field before processing data",
+    "real_time": "Poll the real-time endpoint for live dashboard updates",
+    "export_limits": "Large exports may take time - implement progress indicators",
+    "file_downloads": "Handle file downloads appropriately based on content type"
+  }
+} 

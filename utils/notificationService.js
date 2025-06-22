@@ -37,6 +37,11 @@ exports.sendEmail = async (options) => {
     html: options.message
   };
 
+  // Add attachments if provided
+  if (options.attachments) {
+    mailOptions.attachments = options.attachments;
+  }
+
   // Send email
   const info = await transporter.sendMail(mailOptions);
 
