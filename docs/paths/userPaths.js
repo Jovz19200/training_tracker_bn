@@ -121,10 +121,10 @@ module.exports = {
               properties: {
                 name: { type: 'string' },
                 email: { type: 'string', format: 'email' },
-                role: { 
+                role: {
                   type: 'string',
-                  enum: ['trainee', 'manager', 'admin'],
-                  description: 'Role can only be changed by admin'
+                  enum: ['trainee', 'trainer', 'admin'],
+                  description: 'User role'
                 },
                 organization: { type: 'string' }
               }
@@ -177,6 +177,101 @@ module.exports = {
         },
         401: { description: 'Unauthorized - Invalid or missing token' },
         403: { description: 'Forbidden - User does not have admin role' },
+        404: { description: 'User not found' }
+      }
+    }
+  },
+  '/users/{id}/disability': {
+    get: {
+      summary: 'Get disability info for a user',
+      tags: ['Users'],
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          schema: { type: 'string' },
+          required: true,
+          description: 'User ID'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'Disability info',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      hasDisability: { type: 'boolean' },
+                      disabilityType: { type: 'string' },
+                      accessibilityNeeds: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        403: { description: 'Not authorized' },
+        404: { description: 'User not found' }
+      }
+    },
+    put: {
+      summary: 'Update disability info for a user',
+      tags: ['Users'],
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          schema: { type: 'string' },
+          required: true,
+          description: 'User ID'
+        }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                hasDisability: { type: 'boolean' },
+                disabilityType: { type: 'string' },
+                accessibilityNeeds: { type: 'string' }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Updated disability info',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      hasDisability: { type: 'boolean' },
+                      disabilityType: { type: 'string' },
+                      accessibilityNeeds: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        403: { description: 'Not authorized' },
         404: { description: 'User not found' }
       }
     }

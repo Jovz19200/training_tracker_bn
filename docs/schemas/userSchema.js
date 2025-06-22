@@ -27,7 +27,7 @@ module.exports = {
     },
     role: {
       type: 'string',
-      enum: ['trainee', 'trainer', 'manager', 'admin'],
+      enum: ['trainee', 'trainer', 'admin'],
       default: 'trainee',
       description: 'User\'s role in the system'
     },

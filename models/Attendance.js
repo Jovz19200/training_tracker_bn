@@ -6,23 +6,9 @@ const AttendanceSchema = new mongoose.Schema({
     ref: 'Enrollment',
     required: true
   },
-  user: {
+  session: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  course: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Course',
-    required: true
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  sessionNumber: {
-    type: Number,
+    ref: 'Schedule',
     required: true
   },
   status: {
@@ -39,17 +25,20 @@ const AttendanceSchema = new mongoose.Schema({
   duration: {
     type: Number, // in minutes
   },
-  notes: {
-    type: String
-  },
   verificationMethod: {
     type: String,
     enum: ['qr', 'manual', 'other'],
     default: 'qr'
+  },
+  notes: {
+    type: String
+  },
+  excuseReason: {
+    type: String
   }
 });
 
-// Prevent duplicate attendance records for the same session
-AttendanceSchema.index({ enrollment: 1, date: 1, sessionNumber: 1 }, { unique: true });
+// Prevent duplicate attendance records for the same enrollment and session
+AttendanceSchema.index({ enrollment: 1, session: 1 }, { unique: true });
 
 module.exports = mongoose.model('Attendance', AttendanceSchema);

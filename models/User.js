@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema({
   twoFATokenExpire: Date,
   role: {
     type: String,
-    enum: ['trainee', 'trainer', 'manager', 'admin'],
+    enum: ['trainee', 'trainer', 'admin'],
     default: 'trainee'
   },
   password: {

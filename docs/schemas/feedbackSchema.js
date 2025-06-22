@@ -15,7 +15,7 @@ module.exports = {
     },
     enrollment: {
       type: 'string',
-      description: 'Reference to the enrollment'
+      description: 'Reference to the enrollment (required for feedback eligibility)'
     },
     submissionDate: {
       type: 'string',

@@ -6,11 +6,22 @@ const Organization = require('../models/Organization');
 // @access  Private/Admin
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await User.countDocuments();
+    const users = await User.find().skip(skip).limit(limit);
+    const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
       success: true,
       count: users.length,
+      total,
+      page,
+      limit,
+      totalPages,
       data: users
     });
   } catch (err) {

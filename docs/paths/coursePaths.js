@@ -366,5 +366,165 @@ module.exports = {
         }
       }
     }
+  },
+  '/api/courses/{id}/materials': {
+    get: {
+      tags: ['Courses'],
+      summary: 'List all materials for a course',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Course ID'
+        }
+      ],
+      responses: {
+        200: {
+          description: 'List of materials',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        title: { type: 'string' },
+                        fileUrl: { type: 'string' },
+                        fileType: { type: 'string' },
+                        uploadDate: { type: 'string', format: 'date-time' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        404: { description: 'Course not found' }
+      }
+    },
+    post: {
+      tags: ['Courses'],
+      summary: 'Upload a material to a course',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Course ID'
+        }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                  description: 'Material file (PDF, doc, ppt, video, audio, image, etc.)'
+                },
+                title: {
+                  type: 'string',
+                  description: 'Optional title for the material'
+                }
+              },
+              required: ['file']
+            }
+          }
+        }
+      },
+      responses: {
+        201: {
+          description: 'Material uploaded successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      title: { type: 'string' },
+                      fileUrl: { type: 'string' },
+                      fileType: { type: 'string' },
+                      uploadDate: { type: 'string', format: 'date-time' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'No file uploaded or invalid request' },
+        404: { description: 'Course not found' }
+      }
+    }
+  },
+  '/api/courses/{id}/materials/{materialId}': {
+    delete: {
+      tags: ['Courses'],
+      summary: 'Delete a material from a course',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Course ID'
+        },
+        {
+          name: 'materialId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Material ID'
+        }
+      ],
+      responses: {
+        200: { description: 'Material deleted' },
+        404: { description: 'Course or material not found' }
+      }
+    }
+  },
+  '/api/courses/{id}/materials/{materialId}/download': {
+    get: {
+      tags: ['Courses'],
+      summary: 'Download a material file',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Course ID'
+        },
+        {
+          name: 'materialId',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Material ID'
+        }
+      ],
+      responses: {
+        200: { description: 'File download' },
+        404: { description: 'Course, material, or file not found' }
+      }
+    }
   }
 };
