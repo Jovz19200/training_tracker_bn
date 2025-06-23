@@ -529,14 +529,20 @@ exports.generateCustomReport = async (req, res) => {
         data: reportData,
         generatedBy: `${req.user.firstName} ${req.user.lastName}`,
         generatedDate: new Date(),
+
+        reportType,
         includeCharts
       });
+
+      // Use only the filename for the download URL
+      const pathLib = require('path');
+      const filename = pathLib.basename(pdfPath);
 
       res.status(200).json({
         success: true,
         data: {
           reportId: Date.now().toString(),
-          downloadUrl: `/api/analytics/reports/download/${pdfPath.split('/').pop()}`,
+          downloadUrl: `/api/analytics/reports/download/${filename}`,
           message: 'Report generated successfully'
         }
       });
@@ -679,14 +685,23 @@ async function generateComprehensiveReport(startDate, endDate, courseId, organiz
     generateFeedbackReport(startDate, endDate, courseId, organizationId)
   ]);
 
+  // Example recommendations and feedback comments (replace with real logic as needed)
+  const recommendations = [
+    'Schedule an additional Assistive Tech refresher session.',
+    'Provide printed handouts for communication training.',
+    'Monitor follow-ups for missed sessions.'
+  ];
+  const feedbackComments = feedbackData.feedbackComments || [];
+
   return {
     enrollment: enrollmentData,
     completion: completionData,
-    feedback: feedbackData,
+    feedback: { ...feedbackData, feedbackComments },
     period: {
       startDate: startDate || 'All time',
       endDate: endDate || 'Present'
-    }
+    },
+    recommendations
   };
 }
 
@@ -1961,4 +1976,64 @@ exports.getAttendanceAnalytics = async (req, res) => {
       message: error.message
     });
   }
+};
+
+exports.previewReport = async (req, res) => {
+  const pathLib = require('path');
+  const fs = require('fs');
+  const filename = req.params.filename;
+  const filePath = pathLib.join(__dirname, '..', 'uploads', 'reports', filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename=\"${filename}\"`);
+  fs.createReadStream(filePath).pipe(res);
+};
+
+exports.getReportFiles = async (req, res) => {
+  const allowedExtensions = ['.pdf', '.csv', '.xlsx', '.xls', '.json'];
+  const reportsDir = path.join('uploads', 'reports');
+  try {
+    if (!fs.existsSync(reportsDir)) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+    const files = fs.readdirSync(reportsDir);
+    const reportFiles = files
+      .filter(filename => allowedExtensions.includes(path.extname(filename).toLowerCase()))
+      .map(filename => {
+        const filePath = path.join(reportsDir, filename);
+        const stats = fs.statSync(filePath);
+        return {
+          filename,
+          size: stats.size,
+          createdAt: stats.birthtime,
+          modifiedAt: stats.mtime,
+          downloadUrl: `/api/analytics/reports/download/${filename}`,
+          previewUrl: path.extname(filename).toLowerCase() === '.pdf'
+            ? `/api/analytics/reports/preview/${filename}`
+            : null
+        };
+      })
+      .sort((a, b) => b.createdAt - a.createdAt);
+    res.status(200).json({ success: true, data: reportFiles });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.downloadReport = async (req, res) => {
+  const pathLib = require('path');
+  const fs = require('fs');
+  const allowedExtensions = ['.pdf', '.csv', '.xlsx', '.xls', '.json'];
+  const filename = req.params.filename;
+  const ext = pathLib.extname(filename).toLowerCase();
+  if (!allowedExtensions.includes(ext)) {
+    return res.status(400).json({ success: false, message: 'Invalid file type' });
+  }
+  const filePath = pathLib.join(__dirname, '..', 'uploads', 'reports', filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  res.download(filePath, filename);
 }; 

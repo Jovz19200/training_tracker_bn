@@ -115,6 +115,7 @@ exports.createEnrollment = async (req, res) => {
     if (new Date() > new Date(course.startDate)) {
       return res.status(400).json({
         success: false,
+
         message: 'Course has already started. Late enrollment not allowed.'
       });
     }
@@ -446,5 +447,56 @@ exports.completeEnrollment = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.downloadCertificate = async (req, res) => {
+  const pathLib = require('path');
+  const fs = require('fs');
+  const filename = req.params.filename;
+  const filePath = pathLib.join(__dirname, '..', 'uploads', 'certificates', filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  res.download(filePath, filename);
+};
+
+exports.previewCertificate = async (req, res) => {
+  const pathLib = require('path');
+  const fs = require('fs');
+  const filename = req.params.filename;
+  const filePath = pathLib.join(__dirname, '..', 'uploads', 'certificates', filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: 'File not found' });
+  }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename=\"${filename}\"`);
+  fs.createReadStream(filePath).pipe(res);
+};
+
+exports.getCertificateFiles = async (req, res) => {
+  const pathLib = require('path');
+  const fs = require('fs');
+  try {
+    const certDir = pathLib.join('uploads', 'certificates');
+    if (!fs.existsSync(certDir)) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+    const files = fs.readdirSync(certDir);
+    const certificateFiles = files.map(filename => {
+      const filePath = pathLib.join(certDir, filename);
+      const stats = fs.statSync(filePath);
+      return {
+        filename,
+        size: stats.size,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime,
+        downloadUrl: `/api/certificates/download/${filename}`,
+        previewUrl: `/api/certificates/preview/${filename}`
+      };
+    }).sort((a, b) => b.createdAt - a.createdAt);
+    res.status(200).json({ success: true, data: certificateFiles });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 }; 

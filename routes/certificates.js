@@ -1,5 +1,6 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
+const { downloadCertificate, previewCertificate, getCertificateFiles } = require('../controllers/enrollmentController');
 
 const router = express.Router();
 
@@ -64,5 +65,12 @@ router.get('/verify/:certificateNumber', (req, res) => {
     message: `Verify certificate ${req.params.certificateNumber} endpoint`
   });
 });
+
+// Download and preview endpoints for certificates
+router.get('/download/:filename', downloadCertificate);
+router.get('/preview/:filename', previewCertificate);
+
+// List all generated certificate files
+router.get('/files', getCertificateFiles);
 
 module.exports = router;

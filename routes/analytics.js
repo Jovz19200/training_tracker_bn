@@ -17,7 +17,10 @@ const {
   getAccessibilityNeedsStats,
   getEnrollmentStatsByDisability,
   getCertificateAnalytics,
-  getAttendanceAnalytics
+  getAttendanceAnalytics,
+  previewReport,
+  getReportFiles,
+  downloadReport
 } = require('../controllers/analyticsController');
 
 const router = express.Router();
@@ -55,10 +58,15 @@ router.post('/reports/generate', generateCustomReport);
 router.post('/export', exportAnalyticsData);
 router.get('/download/:filename', downloadExport);
 router.get('/exports', getExportHistory);
+router.get('/reports/preview/:filename', previewReport);
+
 
 // Disability analytics
 router.get('/disability-type-stats', authorize('admin', 'trainer'), getDisabilityTypeStats);
 router.get('/accessibility-needs-stats', authorize('admin', 'trainer'), getAccessibilityNeedsStats);
 router.get('/enrollment-stats-by-disability', authorize('admin', 'trainer'), getEnrollmentStatsByDisability);
+
+router.get('/reports/files', getReportFiles);
+router.get('/reports/download/:filename', downloadReport);
 
 module.exports = router;
