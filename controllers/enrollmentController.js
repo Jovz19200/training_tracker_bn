@@ -115,6 +115,7 @@ exports.createEnrollment = async (req, res) => {
     if (new Date() > new Date(course.startDate)) {
       return res.status(400).json({
         success: false,
+
         message: 'Course has already started. Late enrollment not allowed.'
       });
     }

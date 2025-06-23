@@ -13,6 +13,7 @@ function ensureDirExists(dirPath) {
   }
 }
 
+
 // Generate a certificate PDF (professional, disability-focused design)
 exports.generateCertificatePDF = async (certificateData) => {
   return new Promise((resolve, reject) => {
@@ -22,6 +23,7 @@ exports.generateCertificatePDF = async (certificateData) => {
       // Ensure output directory exists
       const certDir = path.join('uploads', 'certificates');
       ensureDirExists(certDir);
+
       
       // Create a document
       const doc = new PDFDocument({
@@ -37,6 +39,7 @@ exports.generateCertificatePDF = async (certificateData) => {
 
       // Background with subtle gradient effect
       doc.rect(0, 0, doc.page.width, doc.page.height).fill('#fafbfc');
+
       
       // Decorative border
       doc.strokeColor('#e2e8f0').lineWidth(2);

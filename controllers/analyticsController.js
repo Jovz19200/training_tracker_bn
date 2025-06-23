@@ -529,6 +529,7 @@ exports.generateCustomReport = async (req, res) => {
         data: reportData,
         generatedBy: `${req.user.firstName} ${req.user.lastName}`,
         generatedDate: new Date(),
+
         reportType,
         includeCharts
       });
@@ -536,6 +537,7 @@ exports.generateCustomReport = async (req, res) => {
       // Use only the filename for the download URL
       const pathLib = require('path');
       const filename = pathLib.basename(pdfPath);
+
       res.status(200).json({
         success: true,
         data: {
